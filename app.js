@@ -372,31 +372,63 @@
     const btn = $("voice-btn");
     const keyboardBtn = $("voice-keyboard");
 
-    btn.addEventListener("click", () => {
+    // 预先授权一次麦克风权限（立即释放），让浏览器记住授权，后面用语音就不再弹权限框
+    let preAuthorized = false;
+    async function preAuthorizeMic() {
+      if (preAuthorized) return;
+      try {
+        const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+        s.getTracks().forEach((t) => t.stop());
+        preAuthorized = true;
+      } catch (e) { /* 用户可能拒绝了，正常使用时还会再弹一次 */ }
+    }
+
+    function onPressStart(e) {
       if (voiceTranscribing) {
         $("voice-tip").textContent = "正在转文字，请稍等…";
+        e.preventDefault();
         return;
       }
       if (voiceState !== "idle") {
         stopCloudRecording(false);
+        e.preventDefault();
         return;
       }
       const cfg = SnapStory.getConfig();
       if (!cfg.asrKey) {
         $("ai-modal").classList.remove("hidden");
         $("asr-key").focus();
-        showVoiceFallback("请先在设置里填「硅基流动 API Key」，保存后再点话筒");
+        showVoiceFallback("请先在设置里填「硅基流动 API Key」，保存后再按话筒");
+        e.preventDefault();
         return;
       }
+      // 提前预授权，让浏览器缓存权限
+      if (!preAuthorized) preAuthorizeMic();
       startCloudRecording(cfg.asrKey);
-    });
+      e.preventDefault(); // 阻止 click 触发两次
+    }
+
+    function onPressEnd(e) {
+      if (voiceState === "listening" || voiceState === "starting") {
+        stopCloudRecording(false);
+        e.preventDefault();
+      }
+    }
+
+    // 按压事件（同时支持鼠标和触屏）
+    btn.addEventListener("mousedown", onPressStart);
+    btn.addEventListener("mouseup", onPressEnd);
+    btn.addEventListener("mouseleave", onPressEnd); // 拖着手指移开也停止
+    btn.addEventListener("touchstart", onPressStart, { passive: false });
+    btn.addEventListener("touchend", onPressEnd, { passive: false });
+    btn.addEventListener("touchcancel", onPressEnd, { passive: false });
 
     if (keyboardBtn) {
       keyboardBtn.addEventListener("click", focusKeyboardVoice);
     }
 
     $("voice-tip").textContent = SnapStory.getConfig().asrKey
-      ? "点一下说话，说完自动转文字"
+      ? "按住话筒说话，松开自动转文字"
       : "首次使用请点右上角 AI 填语音 Key；也可以点「用键盘话筒」";
   }
 
@@ -466,7 +498,7 @@
     }
 
     setVoiceUI("listening");
-    $("voice-tip").textContent = "请说话，说完点一下结束";
+    $("voice-tip").textContent = "正在录音… 松开手指结束";
     clearCloudTimer();
     cloudTimer = setTimeout(() => {
       if (voiceState === "listening") stopCloudRecording(false);
@@ -547,6 +579,22 @@
       initBrowserVoice();
     }
   }
+
+  // 页面首次交互时预授权一次麦克风（立即释放），让浏览器记住权限
+  // 这样用户只要点一次"允许"，后续所有语音都不再弹权限框
+  let audioPreAuthorized = false;
+  function tryPreAuthorizeAudio() {
+    if (audioPreAuthorized) return;
+    audioPreAuthorized = true;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+    navigator.mediaDevices.getUserMedia({ audio: true }).then((s) => {
+      s.getTracks().forEach((t) => t.stop());
+    }).catch(() => { /* 用户拒绝了也没关系 */ });
+  }
+  // 监听第一次用户交互（点屏幕/触屏）触发预授权
+  ["click", "touchstart", "keydown"].forEach((evt) => {
+    document.addEventListener(evt, tryPreAuthorizeAudio, { once: true, passive: true });
+  });
 
   try {
     initVoiceMode();

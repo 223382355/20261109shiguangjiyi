@@ -592,7 +592,7 @@ textarea:focus, input:focus { border-color: rgba(180, 85, 45, 0.55); }
 .family-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 14px;
 }
 
@@ -600,10 +600,11 @@ textarea:focus, input:focus { border-color: rgba(180, 85, 45, 0.55); }
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px;
+  padding: 12px 12px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.8);
+  min-height: 54px;
 }
 
 .family-item.first {
@@ -618,38 +619,42 @@ textarea:focus, input:focus { border-color: rgba(180, 85, 45, 0.55); }
   font-weight: 700;
   color: #fff;
   background: var(--accent);
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 8px;
+  white-space: nowrap;
 }
 
 .family-item .family-name {
   flex: 1;
-  border: none;
-  background: transparent;
+  border: 1px solid rgba(90, 76, 58, 0.18);
+  background: #fff;
   font: inherit;
   font-size: 17px;
   color: var(--ink);
-  padding: 4px 6px;
-  border-radius: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  min-height: 40px;
+  width: 0; /* 让 flex:1 生效 */
 }
 
 .family-item .family-name:focus {
-  background: #fff;
-  outline: 2px solid rgba(180, 85, 45, 0.35);
+  border-color: var(--accent);
+  outline: 2px solid rgba(180, 85, 45, 0.25);
 }
 
 .family-item .family-actions {
   display: flex;
   gap: 4px;
+  flex: none;
 }
 
 .family-item .family-actions button {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.7);
   border-radius: 10px;
-  font-size: 16px;
+  font-size: 17px;
   cursor: pointer;
   display: grid;
   place-items: center;
