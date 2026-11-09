@@ -372,17 +372,6 @@
     const btn = $("voice-btn");
     const keyboardBtn = $("voice-keyboard");
 
-    // 预先授权一次麦克风权限（立即释放），让浏览器记住授权，后面用语音就不再弹权限框
-    let preAuthorized = false;
-    async function preAuthorizeMic() {
-      if (preAuthorized) return;
-      try {
-        const s = await navigator.mediaDevices.getUserMedia({ audio: true });
-        s.getTracks().forEach((t) => t.stop());
-        preAuthorized = true;
-      } catch (e) { /* 用户可能拒绝了，正常使用时还会再弹一次 */ }
-    }
-
     function onPressStart(e) {
       if (voiceTranscribing) {
         $("voice-tip").textContent = "正在转文字，请稍等…";
@@ -402,8 +391,6 @@
         e.preventDefault();
         return;
       }
-      // 提前预授权，让浏览器缓存权限
-      if (!preAuthorized) preAuthorizeMic();
       startCloudRecording(cfg.asrKey);
       e.preventDefault(); // 阻止 click 触发两次
     }
@@ -579,22 +566,6 @@
       initBrowserVoice();
     }
   }
-
-  // 页面首次交互时预授权一次麦克风（立即释放），让浏览器记住权限
-  // 这样用户只要点一次"允许"，后续所有语音都不再弹权限框
-  let audioPreAuthorized = false;
-  function tryPreAuthorizeAudio() {
-    if (audioPreAuthorized) return;
-    audioPreAuthorized = true;
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
-    navigator.mediaDevices.getUserMedia({ audio: true }).then((s) => {
-      s.getTracks().forEach((t) => t.stop());
-    }).catch(() => { /* 用户拒绝了也没关系 */ });
-  }
-  // 监听第一次用户交互（点屏幕/触屏）触发预授权
-  ["click", "touchstart", "keydown"].forEach((evt) => {
-    document.addEventListener(evt, tryPreAuthorizeAudio, { once: true, passive: true });
-  });
 
   try {
     initVoiceMode();

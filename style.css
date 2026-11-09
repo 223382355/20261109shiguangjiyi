@@ -666,13 +666,28 @@ textarea:focus, input:focus { border-color: rgba(180, 85, 45, 0.55); }
 
 .family-add {
   display: flex;
-  gap: 8px;
-  align-items: stretch;
+  gap: 10px;
+  align-items: center;
   margin-bottom: 4px;
 }
 
-.family-add input { flex: 1; font-size: 16px; padding: 10px 14px; }
-.family-add-btn { flex: none; padding: 0 18px; min-height: 46px; font-size: 16px; border-radius: 14px; }
+.family-add input {
+  flex: 1;
+  font-size: 17px;
+  padding: 14px 16px;
+  min-height: 54px;
+  width: 0; /* 让 flex:1 生效 */
+}
+
+.family-add-btn {
+  flex: none;
+  padding: 0 20px;
+  min-width: 90px;
+  min-height: 54px;
+  font-size: 17px;
+  font-weight: 700;
+  border-radius: 14px;
+}
 
 /* 轻提示 */
 .toast {

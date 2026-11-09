@@ -44,11 +44,11 @@
       button.classList.toggle("starting", next === "starting");
       if (!label) return;
       if (next === "starting") {
-        label.textContent = mode === "cloud" ? "正在打开麦克风…" : "正在启动… 再点一下取消";
+        label.textContent = "正在打开麦克风…";
       } else if (next === "listening") {
-        label.textContent = mode === "cloud" ? "正在录音… 点一下结束" : "正在听… 点一下结束";
+        label.textContent = "正在录音… 松开手指结束";
       } else {
-        label.textContent = mode === "keyboard" ? "语音输入" : "点一下，说话";
+        label.textContent = "按下说话，松开结束";
       }
     }
 
@@ -276,7 +276,7 @@
           return;
         }
         setUI("listening");
-        setTip("请说话，说完点一下结束");
+        setTip("正在录音… 松开手指结束");
         clearTimer();
         timer = setTimeout(() => stopCloud(false), 30000);
       }).catch((err) => {
@@ -386,10 +386,48 @@
       if (label) label.textContent = "语音输入";
       setTip("这个浏览器不支持网页语音，请点下面的「用键盘话筒」");
     } else {
-      setTip("点一下说话，说完会自动变成文字");
+      setTip("按住话筒说话，松开自动转文字");
     }
 
-    button.addEventListener("click", start);
+    function onPressStart(e) {
+      if (transcribing) {
+        setTip("正在转文字，请稍等…");
+        e.preventDefault();
+        return;
+      }
+      if (state !== "idle") {
+        if (mode === "cloud") stopCloud(false);
+        else stopBrowser();
+        e.preventDefault();
+        return;
+      }
+      if (mode === "keyboard") { focusKeyboard(); e.preventDefault(); return; }
+      if (mode === "cloud") {
+        const key = getKey();
+        if (!key) { keepVoice("没有配置语音 Key，请再按一次，或点「用键盘话筒」"); e.preventDefault(); return; }
+        startCloud(key);
+      } else {
+        startBrowser();
+      }
+      e.preventDefault();
+    }
+
+    function onPressEnd(e) {
+      if (state === "listening" || state === "starting") {
+        if (mode === "cloud") stopCloud(false);
+        else stopBrowser();
+        e.preventDefault();
+      }
+    }
+
+    // 同时支持鼠标和触屏
+    button.addEventListener("mousedown", onPressStart);
+    button.addEventListener("mouseup", onPressEnd);
+    button.addEventListener("mouseleave", onPressEnd);
+    button.addEventListener("touchstart", onPressStart, { passive: false });
+    button.addEventListener("touchend", onPressEnd, { passive: false });
+    button.addEventListener("touchcancel", onPressEnd, { passive: false });
+
     if (keyboardBtn) keyboardBtn.addEventListener("click", focusKeyboard);
   }
 
