@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#F7F2E8">
   <meta name="description" content="家人做了一张纪念海报，扫码给TA留句话吧。">
   <title>家人的留言 · 记忆相册</title>
-  <link rel="stylesheet" href="style.css?v=20261109k">
+  <link rel="stylesheet" href="style.css?v=20261109l">
 </head>
 <body class="viewer-body">
   <main class="app viewer">
@@ -51,8 +51,12 @@
         <div class="comment-list" id="comment-list"></div>
 
         <form class="comment-form" id="comment-form">
-          <label class="field-label" for="comment-name">您的称呼</label>
-          <input id="comment-name" name="name" maxlength="12" autocomplete="nickname" placeholder="比如：小敏、二儿子">
+          <label class="field-label" for="comment-name-select">您的称呼</label>
+          <select id="comment-name-select" class="comment-name-select">
+            <!-- 家人昵称由 JS 填充 -->
+          </select>
+          <input id="comment-name-other" type="text" maxlength="12" autocomplete="nickname" placeholder="输入您的昵称" class="comment-name-other hidden">
+          <input id="comment-name" type="hidden" name="name">
           <label class="field-label" for="comment-content">想说的话</label>
           <textarea id="comment-content" name="content" maxlength="200" rows="4" placeholder="比如：奶奶笑得真好看，周末回家看您。"></textarea>
           <div class="voice-row">
@@ -87,9 +91,9 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="qrcode.js"></script>
-  <script src="poster.js?v=20261109k"></script>
-  <script src="sync.js?v=20261109k"></script>
-  <script src="voice.js?v=20261109k"></script>
-  <script src="view.js?v=20261109k"></script>
+  <script src="poster.js?v=20261109l"></script>
+  <script src="sync.js?v=20261109l"></script>
+  <script src="voice.js?v=20261109l"></script>
+  <script src="view.js?v=20261109l"></script>
 </body>
 </html>

@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#F7F2E8">
   <meta name="description" content="记忆相册 · 随手拍一张照片，选一种风格，生成一张带家人留言的纪念海报。">
   <title>记忆相册 · 把今天留成一幅画</title>
-  <link rel="stylesheet" href="style.css?v=20261109k">
+  <link rel="stylesheet" href="style.css?v=20261109l">
 </head>
 <body>
   <main class="app">
@@ -16,6 +16,12 @@
         <span class="brand-text">记忆相册</span>
       </a>
       <div class="top-actions">
+        <button class="icon-btn" id="family-btn" type="button" aria-label="家人昵称设置">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6 1.65 1.65 0 0 0 10 3.09V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
         <button class="icon-btn" id="ai-btn" type="button" aria-label="AI 设置">AI</button>
         <button class="icon-btn" id="help-btn" type="button" aria-label="使用帮助">?</button>
       </div>
@@ -278,6 +284,23 @@
     </div>
   </div>
 
+  <!-- 家人昵称 -->
+  <div class="modal hidden" id="family-modal">
+    <div class="modal-card">
+      <h2>家人昵称</h2>
+      <p class="modal-sub">第一个昵称是老人的称呼，家人留言时可以选自己的昵称。</p>
+      <div class="family-list" id="family-list"></div>
+      <div class="family-add">
+        <input id="family-new-input" type="text" maxlength="12" placeholder="添加一个昵称，比如：小敏">
+        <button class="btn btn-primary family-add-btn" id="family-add-btn" type="button">添加</button>
+      </div>
+      <div class="row">
+        <button class="btn btn-ghost" id="family-cancel" type="button">关闭</button>
+        <button class="btn btn-primary" id="family-save" type="button">保存</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 帮助 -->
   <div class="modal hidden" id="help-modal">
     <div class="modal-card">
@@ -295,9 +318,9 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="qrcode.js"></script>
-  <script src="poster.js?v=20261109k"></script>
-  <script src="sync.js?v=20261109k"></script>
-  <script src="voice.js?v=20261109k"></script>
-  <script src="app.js?v=20261109k"></script>
+  <script src="poster.js?v=20261109l"></script>
+  <script src="sync.js?v=20261109l"></script>
+  <script src="voice.js?v=20261109l"></script>
+  <script src="app.js?v=20261109l"></script>
 </body>
 </html>

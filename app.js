@@ -1063,6 +1063,134 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 
+  // ---------------- 家人昵称设置 ----------------
+  const FAMILY_KEY = "snapstory.familyNames";
+  const DEFAULT_FAMILY = ["老人"];
+
+  function loadFamilyNames() {
+    try {
+      const raw = localStorage.getItem(FAMILY_KEY);
+      if (!raw) return DEFAULT_FAMILY.slice();
+      const list = JSON.parse(raw);
+      if (!Array.isArray(list) || !list.length) return DEFAULT_FAMILY.slice();
+      return list.map((n) => String(n || "").trim().slice(0, 12)).filter(Boolean);
+    } catch (e) {
+      return DEFAULT_FAMILY.slice();
+    }
+  }
+
+  function saveFamilyNames(list) {
+    localStorage.setItem(FAMILY_KEY, JSON.stringify(list));
+  }
+
+  let familyDraft = [];
+
+  function renderFamilyList() {
+    const box = $("family-list");
+    box.innerHTML = "";
+    familyDraft.forEach((name, i) => {
+      const item = document.createElement("div");
+      item.className = "family-item" + (i === 0 ? " first" : "");
+      item.dataset.index = String(i);
+
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "family-name";
+      input.maxLength = 12;
+      input.value = name;
+      input.placeholder = i === 0 ? "老人的称呼" : "家人昵称";
+      input.addEventListener("input", () => {
+        familyDraft[i] = input.value.trim();
+      });
+
+      const actions = document.createElement("div");
+      actions.className = "family-actions";
+
+      const up = document.createElement("button");
+      up.type = "button";
+      up.innerHTML = "↑";
+      up.title = "上移";
+      up.disabled = i === 0;
+      up.addEventListener("click", () => {
+        if (i === 0) return;
+        [familyDraft[i - 1], familyDraft[i]] = [familyDraft[i], familyDraft[i - 1]];
+        renderFamilyList();
+      });
+
+      const down = document.createElement("button");
+      down.type = "button";
+      down.innerHTML = "↓";
+      down.title = "下移";
+      down.disabled = i === familyDraft.length - 1;
+      down.addEventListener("click", () => {
+        if (i === familyDraft.length - 1) return;
+        [familyDraft[i + 1], familyDraft[i]] = [familyDraft[i], familyDraft[i + 1]];
+        renderFamilyList();
+      });
+
+      const del = document.createElement("button");
+      del.type = "button";
+      del.innerHTML = "×";
+      del.title = "删除";
+      del.addEventListener("click", () => {
+        if (familyDraft.length <= 1) {
+          toast("至少保留一个昵称");
+          return;
+        }
+        familyDraft.splice(i, 1);
+        renderFamilyList();
+      });
+
+      actions.appendChild(up);
+      actions.appendChild(down);
+      actions.appendChild(del);
+
+      item.appendChild(input);
+      item.appendChild(actions);
+      box.appendChild(item);
+    });
+  }
+
+  function openFamilyModal() {
+    familyDraft = loadFamilyNames();
+    if (!familyDraft.length) familyDraft = DEFAULT_FAMILY.slice();
+    renderFamilyList();
+    $("family-new-input").value = "";
+    $("family-modal").classList.remove("hidden");
+    setTimeout(() => $("family-new-input").focus(), 50);
+  }
+
+  function closeFamilyModal() {
+    $("family-modal").classList.add("hidden");
+  }
+
+  $("family-btn").addEventListener("click", openFamilyModal);
+  $("family-cancel").addEventListener("click", closeFamilyModal);
+
+  function addFamilyName() {
+    const input = $("family-new-input");
+    const val = input.value.trim().slice(0, 12);
+    if (!val) { toast("写一个昵称再加"); return; }
+    if (familyDraft.includes(val)) { toast("已经有这个昵称了"); input.value = ""; return; }
+    familyDraft.push(val);
+    input.value = "";
+    renderFamilyList();
+    input.focus();
+  }
+
+  $("family-add-btn").addEventListener("click", addFamilyName);
+  $("family-new-input").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); addFamilyName(); }
+  });
+
+  $("family-save").addEventListener("click", () => {
+    const clean = familyDraft.map((n) => String(n || "").trim().slice(0, 12)).filter(Boolean);
+    if (!clean.length) { toast("至少保留一个昵称"); return; }
+    saveFamilyNames(clean);
+    closeFamilyModal();
+    toast("已保存家人昵称");
+  });
+
   // ---------------- AI 设置 ----------------
   function updateAiHint() {
     const cfg = SnapStory.getConfig();

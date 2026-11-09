@@ -118,16 +118,87 @@
     $("view-error").classList.remove("hidden");
   }
 
+  function loadFamilyNames() {
+    try {
+      const raw = localStorage.getItem("snapstory.familyNames");
+      if (!raw) return null;
+      const list = JSON.parse(raw);
+      if (!Array.isArray(list) || !list.length) return null;
+      return list.map((n) => String(n || "").trim().slice(0, 12)).filter(Boolean);
+    } catch (e) {
+      return null;
+    }
+  }
+
   function setupName() {
-    const input = $("comment-name");
-    const urlName = (new URLSearchParams(location.search).get("name") || "").trim().slice(0, 12);
-    const saved = (localStorage.getItem("snapstory.myname") || "").trim().slice(0, 12);
-    const defaultValue = saved || urlName;
-    input.value = defaultValue || "家人";
-    input.placeholder = "微信昵称，可修改";
-    const remember = () => localStorage.setItem("snapstory.myname", input.value.trim());
-    input.addEventListener("input", remember);
-    input.addEventListener("change", remember);
+    const select = $("comment-name-select");
+    const otherInput = $("comment-name-other");
+    const hiddenInput = $("comment-name");
+
+    const familyNames = loadFamilyNames();
+    const savedChoice = (localStorage.getItem("snapstory.myChoice") || "").trim();
+    const savedOther = (localStorage.getItem("snapstory.myname") || "").trim();
+
+    let presetList = familyNames;
+    let customOnly = false;
+
+    if (!presetList) {
+      presetList = ["家人"];
+      customOnly = true;
+    }
+
+    // 填充 select
+    select.innerHTML = presetList.map((n, i) =>
+      `<option value="${i}">${esc(n)}</option>`
+    ).join("") + `<option value="__other">其他（自己输入）</option>`;
+
+    // 决定默认选中哪个
+    let selectedIndex = 0;
+    let isOther = false;
+    if (savedChoice === "__other") {
+      isOther = true;
+      otherInput.value = savedOther || "";
+    } else if (savedChoice) {
+      const idx = presetList.indexOf(savedChoice);
+      if (idx >= 0) selectedIndex = idx;
+      else if (customOnly) {
+        isOther = true;
+        otherInput.value = savedOther || savedChoice;
+      }
+    }
+
+    select.value = isOther ? "__other" : String(selectedIndex);
+    otherInput.classList.toggle("hidden", !isOther);
+
+    function syncName() {
+      const val = select.value;
+      let name;
+      if (val === "__other") {
+        name = (otherInput.value || "").trim().slice(0, 12) || "家人";
+        localStorage.setItem("snapstory.myChoice", "__other");
+        localStorage.setItem("snapstory.myname", name);
+      } else {
+        name = presetList[Number(val)] || presetList[0] || "家人";
+        localStorage.setItem("snapstory.myChoice", name);
+        localStorage.setItem("snapstory.myname", name);
+      }
+      hiddenInput.value = name;
+      return name;
+    }
+
+    // 初始化 hiddenInput
+    syncName();
+
+    select.addEventListener("change", () => {
+      const val = select.value;
+      const showOther = val === "__other" || (customOnly);
+      otherInput.classList.toggle("hidden", !showOther);
+      if (showOther) setTimeout(() => otherInput.focus(), 50);
+      syncName();
+    });
+
+    otherInput.addEventListener("input", syncName);
+    otherInput.addEventListener("change", syncName);
   }
 
   function setupVoice() {
@@ -184,7 +255,7 @@
           await renderPoster();
         } catch (err) { console.error(err); }
 
-        toast("已成功留言。", 1000);
+        toast("已成功留言。", 2000);
         if (syncKey && window.SnapSync) {
           SnapSync.publish(syncKey, comment).catch(() => { /* 本机已保存 */ });
         }
@@ -256,7 +327,7 @@
         $("comment-content").value = "";
         $("copy-comment").classList.remove("hidden");
 
-        toast("已成功留言。", 1000);
+        toast("已成功留言。", 2000);
         if (syncKey && window.SnapSync) {
           SnapSync.publish(syncKey, comment).catch(() => { /* 本机已保存 */ });
         }

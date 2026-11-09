@@ -588,6 +588,87 @@ textarea:focus, input:focus { border-color: rgba(180, 85, 45, 0.55); }
 .help-list { margin: 10px 0 14px; padding-left: 22px; }
 .help-list li { margin: 8px 0; }
 
+/* 家人昵称列表 */
+.family-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.family-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.family-item.first {
+  border-color: rgba(180, 85, 45, 0.35);
+  background: rgba(255, 245, 232, 0.9);
+}
+
+.family-item.first::before {
+  content: "老人";
+  flex: none;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  padding: 3px 8px;
+  border-radius: 8px;
+}
+
+.family-item .family-name {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 17px;
+  color: var(--ink);
+  padding: 4px 6px;
+  border-radius: 8px;
+}
+
+.family-item .family-name:focus {
+  background: #fff;
+  outline: 2px solid rgba(180, 85, 45, 0.35);
+}
+
+.family-item .family-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.family-item .family-actions button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: var(--soft);
+}
+
+.family-item .family-actions button:hover { color: var(--ink); }
+.family-item .family-actions button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.family-add {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  margin-bottom: 4px;
+}
+
+.family-add input { flex: 1; font-size: 16px; padding: 10px 14px; }
+.family-add-btn { flex: none; padding: 0 18px; min-height: 46px; font-size: 16px; border-radius: 14px; }
+
 /* 轻提示 */
 .toast {
   position: fixed;
@@ -663,6 +744,36 @@ textarea:focus, input:focus { border-color: rgba(180, 85, 45, 0.55); }
 .comment-form { margin-top: 18px; }
 .comment-form textarea { margin-bottom: 12px; }
 .comment-tip { margin: 10px 0 0; color: var(--soft); font-size: 12px; text-align: center; }
+
+.comment-name-select,
+.comment-name-other {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 17px;
+  color: var(--ink);
+  outline: none;
+  margin-bottom: 10px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='8' viewBox='0 0 14 8'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%237a7162' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.comment-name-select:focus,
+.comment-name-other:focus { border-color: rgba(180, 85, 45, 0.55); }
+
+.comment-name-other {
+  background-image: none;
+  padding-right: 14px;
+}
+
+.comment-name-other.hidden { display: none; }
 
 .view-loading {
   padding: 60px 0;
