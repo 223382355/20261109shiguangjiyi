@@ -10,7 +10,9 @@
     recipe: null,
     pageUrl: "",
     randomQueue: [],
-    randomBusy: false
+    randomBusy: false,
+    copyRound: 0,
+    copyBusy: false
   };
 
   // ---------------- 通用 UI ----------------
@@ -562,6 +564,9 @@
     $("story-input").value = "";
     setStep(3);
   });
+  $("story-input").addEventListener("input", () => {
+    state.story = $("story-input").value.trim();
+  });
   $("next-story").addEventListener("click", () => {
     stopVoiceIfListening();
     state.story = $("story-input").value.trim();
@@ -819,17 +824,24 @@
   function resetRandomCycle() {
     state.randomQueue = [];
     state.randomBusy = false;
+    state.copyRound = 0;
+    state.copyBusy = false;
     const hint = $("random-hint");
-    if (hint) hint.textContent = "随机风格：点一次换一种，6 种换完再从头上开始";
+    if (hint) hint.textContent = "随机风格换配色；更换文案只换主文案；也可以直接点海报上的文案修改。";
     const btn = $("random-style");
     if (btn) {
       btn.disabled = false;
       btn.textContent = "随机风格";
     }
+    const copyBtn = $("change-copy");
+    if (copyBtn) {
+      copyBtn.disabled = false;
+      copyBtn.textContent = "更换文案";
+    }
   }
 
   async function changeRandomStyle() {
-    if (!state.recipe || state.randomBusy) return;
+    if (!state.recipe || state.randomBusy || state.copyBusy) return;
     const styles = (SnapStory.RANDOM_STYLES || []).slice();
     if (!styles.length) return;
 
@@ -853,6 +865,8 @@
     try {
       const recipe = state.recipe;
       recipe.style = style;
+      state.copyRound = 0;
+      recipe.manualCopy = false;
       SnapStory.setCurrentStyle(style);
       $("random-hint").textContent = "正在根据照片和心情写文案…";
 
@@ -900,7 +914,116 @@
     }
   }
 
+  async function refreshRecipeView(recipe, ai) {
+    await SnapStory.renderPoster(posterCanvas, recipe);
+    const dataUrl = posterCanvas.toDataURL("image/jpeg", 0.92);
+    $("poster-img").src = dataUrl;
+    $("download").href = dataUrl;
+
+    const pageUrl = SnapStory.pageUrlFor(recipe);
+    state.pageUrl = pageUrl;
+    $("page-link").href = pageUrl;
+    $("qr-img").src = SnapStory.makeQrCanvas(pageUrl, 560).toDataURL("image/png");
+
+    renderInsight(recipe, ai || { aiUsed: !!recipe.aiUsed });
+    const ok = SnapStory.savePoster(recipe);
+    if (!ok) toast("本机存储空间不足，留言页可能打不开");
+
+    if (recipe.syncKey && window.SnapSync) {
+      SnapSync.uploadPoster(dataUrl, `snapstory-${recipe.id}.jpg`, recipe.syncKey)
+        .catch(() => { /* 上传失败时家人仍可看文字版 */ });
+    }
+  }
+
+  async function changeCopy() {
+    if (!state.recipe || state.copyBusy || state.randomBusy) return;
+    const btn = $("change-copy");
+    state.copyBusy = true;
+    btn.disabled = true;
+    btn.textContent = "正在换…";
+    $("random-hint").textContent = "正在根据照片换一版文案…";
+
+    try {
+      state.copyRound += 1;
+      const recipe = state.recipe;
+      const ai = await SnapStory.analyzePhoto(recipe.photo, recipe.story, state.copyRound);
+      const a = ai.analysis;
+
+      recipe.blessing = a.blessing || SnapStory.FALLBACK_BLESSINGS[recipe.style];
+      recipe.event = a.event || recipe.event;
+      recipe.scene = a.scene || recipe.scene;
+      recipe.emotion = a.emotion || recipe.emotion;
+      recipe.keywords = a.keywords || recipe.keywords || [];
+      recipe.caption = a.caption || recipe.caption;
+      recipe.title = normalizeTitle(a.title, recipe.style);
+      recipe.aiUsed = !!ai.aiUsed;
+
+      await refreshRecipeView(recipe, ai);
+      $("random-hint").textContent = `已换第 ${state.copyRound + 1} 版文案；可以继续换，或直接点海报修改。`;
+      toast("文案已换一版");
+    } catch (e) {
+      console.error(e);
+      $("random-hint").textContent = "换文案失败，请再试一次";
+      toast("换文案失败，请再试一次");
+    } finally {
+      state.copyBusy = false;
+      btn.disabled = false;
+      btn.textContent = "更换文案";
+    }
+  }
+
+  function openCopyEditor() {
+    if (!state.recipe) return;
+    $("copy-input").value = state.recipe.blessing || "";
+    $("copy-modal").classList.remove("hidden");
+    setTimeout(() => {
+      $("copy-input").focus();
+      $("copy-input").select();
+    }, 50);
+  }
+
+  function closeCopyEditor() {
+    $("copy-modal").classList.add("hidden");
+  }
+
+  async function saveCopyEdit() {
+    if (!state.recipe) return;
+    const text = $("copy-input").value.trim();
+    if (!text) {
+      toast("写一句文案再保存");
+      return;
+    }
+    const btn = $("copy-save");
+    btn.disabled = true;
+    try {
+      state.recipe.blessing = text.slice(0, 32);
+      state.recipe.manualCopy = true;
+      closeCopyEditor();
+      await refreshRecipeView(state.recipe);
+      $("random-hint").textContent = "文案已改成你写的这句；还可以点「更换文案」再换。";
+      toast("文案已保存");
+    } catch (e) {
+      console.error(e);
+      toast("保存文案失败，请再试一次");
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
   $("random-style").addEventListener("click", changeRandomStyle);
+  $("change-copy").addEventListener("click", changeCopy);
+  $("poster-img").addEventListener("click", openCopyEditor);
+  $("poster-img").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      openCopyEditor();
+    }
+  });
+  $("copy-cancel").addEventListener("click", closeCopyEditor);
+  $("copy-save").addEventListener("click", saveCopyEdit);
+  $("copy-modal").addEventListener("click", (e) => {
+    if (e.target === $("copy-modal")) closeCopyEditor();
+  });
 
   $("change-style").addEventListener("click", () => {
     if (stopCommentSync) {

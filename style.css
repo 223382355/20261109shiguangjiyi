@@ -396,7 +396,7 @@ textarea:focus, input:focus { border-color: rgba(180, 85, 45, 0.55); }
   background: #fff;
 }
 
-.poster-wrap img { display: block; width: 100%; height: auto; }
+.poster-wrap img { display: block; width: 100%; height: auto; cursor: pointer; }
 
 .insight {
   background: rgba(255, 255, 255, 0.78);
@@ -423,6 +423,7 @@ textarea:focus, input:focus { border-color: rgba(180, 85, 45, 0.55); }
 .actions { display: flex; gap: 12px; }
 .actions .btn { flex: 1; }
 .result-actions { margin-top: 18px; flex-direction: column; }
+.result-pair { width: 100%; }
 .random-hint {
   margin: 8px 0 0;
   text-align: center;

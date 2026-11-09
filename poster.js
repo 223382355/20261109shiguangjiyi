@@ -79,22 +79,22 @@
     "清新": ["花", "草", "树", "山", "水", "海", "云", "春天"]
   };
   const MOOD_BLESSINGS = {
-    "欢喜": "愿这份欢喜，常伴你左右",
-    "想念": "愿想念的人，也正想着你",
-    "安静": "愿日子清清凉凉，心里安安稳稳",
-    "热闹": "愿家里常热闹，心里常团圆",
-    "温暖": "愿有人陪你，把平常日子过暖",
-    "清新": "愿清风常来，日子清清亮亮",
-    "平静": "愿日子不慌不忙，心里安安稳稳"
+    "欢喜": ["愿这份欢喜，常伴你左右", "愿今天的好心情，一直延续下去", "把这份开心留住，日子就有光", "愿笑声常在，好事常来"],
+    "想念": ["愿想念的人，也正想着你", "愿这份惦记，被远方的人收到", "愿旧时光里的温暖，一直陪着你", "愿想念有回音，牵挂有归处"],
+    "安静": ["愿日子清清凉凉，心里安安稳稳", "愿这一份安静，陪你慢慢过", "不慌不忙的日子，最养人", "愿心里常有这样安静的时刻"],
+    "热闹": ["愿家里常热闹，心里常团圆", "愿这样的热闹，常在你家", "人齐了，日子就暖了", "愿笑声常满屋，亲人常相伴"],
+    "温暖": ["愿有人陪你，把平常日子过暖", "愿这份温暖，陪你很久", "家常日子，也有人惦记", "愿平常的一天，也有温度"],
+    "清新": ["愿清风常来，日子清清亮亮", "愿每天都有这样清爽的好心情", "风轻轻的，日子也轻轻的", "愿这一抹清新，留在今天"],
+    "平静": ["愿日子不慌不忙，心里安安稳稳", "愿心里常有这样的平静", "慢一点，日子更有味", "愿今天的好，慢慢留在心里"]
   };
   const OBJECT_BLESSINGS = [
-    { re: /风扇|空调|凉风/, text: "愿这小风扇，吹来一屋清凉" },
-    { re: /花|开花|鲜花/, text: "愿这束花，开成日子的好心情" },
-    { re: /茶|喝茶/, text: "愿这杯茶，陪你慢慢过一天" },
-    { re: /饭|菜|饺子|面/, text: "愿这顿饭，吃出家的热乎气" },
-    { re: /蛋糕|生日/, text: "愿这一岁，平安喜乐" },
-    { re: /照片|相片/, text: "愿这张照片，留住今天的好" },
-    { re: /孙子|孙女|孩子|老伴|全家/, text: "愿身边的人，常笑常相伴" }
+    { re: /风扇|空调|凉风/, items: ["愿这小风扇，吹来一屋清凉", "小风扇转一转，日子也清清爽爽", "愿这阵凉风，陪你慢慢过夏天", "风扇轻轻转，心里松松快快"] },
+    { re: /花|开花|鲜花/, items: ["愿这束花，开成日子的好心情", "花开正好，愿你也正好", "愿这抹花香，留在平常日子里"] },
+    { re: /茶|喝茶/, items: ["愿这杯茶，陪你慢慢过一天", "茶香淡淡，日子也慢慢", "愿你有茶有闲，心里安然"] },
+    { re: /饭|菜|饺子|面/, items: ["愿这顿饭，吃出家的热乎气", "家常饭菜，最暖人心", "愿有人陪你，好好吃饭"] },
+    { re: /蛋糕|生日/, items: ["愿这一岁，平安喜乐", "愿生日这天，笑声围着你", "愿新的一岁，顺顺当当"] },
+    { re: /照片|相片/, items: ["愿这张照片，留住今天的好", "把今天收好，以后再慢慢看", "愿这一刻，值得常常想起"] },
+    { re: /孙子|孙女|孩子|老伴|全家/, items: ["愿身边的人，常笑常相伴", "一家人在一起，就是好日子", "愿这样的相聚，常有", "愿家里有笑，心里有暖"] }
   ];
   const WEATHER_CODES = {
     0: "晴", 1: "多云", 2: "多云", 3: "阴", 45: "有雾", 48: "有雾",
@@ -377,12 +377,17 @@
     return "平静";
   }
 
-  function localBlessing(event, mood) {
+  function pickCopy(pool, round) {
+    const list = Array.isArray(pool) && pool.length ? pool : ["愿今天的好，一直留在身边"];
+    return list[Math.abs(Number(round) || 0) % list.length];
+  }
+
+  function localBlessing(event, mood, round) {
     const text = String(event || "");
     for (const item of OBJECT_BLESSINGS) {
-      if (item.re.test(text)) return item.text;
+      if (item.re.test(text)) return pickCopy(item.items, round);
     }
-    return MOOD_BLESSINGS[mood] || "愿今天的好，一直留在身边";
+    return pickCopy(MOOD_BLESSINGS[mood], round);
   }
 
   function localScene(event, tone) {
@@ -400,7 +405,7 @@
     return "一张记录当下生活的照片";
   }
 
-  async function localAnalysis(photoDataUrl, story) {
+  async function localAnalysis(photoDataUrl, story, round) {
     const base = fallbackAnalysis(story);
     let tone = null;
     try {
@@ -412,7 +417,7 @@
     if (lead && tail) base.caption = `${lead}，${tail}`;
     base.emotion = mood;
     base.scene = localScene(base.event, tone);
-    base.blessing = localBlessing(base.event, mood);
+    base.blessing = localBlessing(base.event, mood, round);
     return base;
   }
 
@@ -432,17 +437,21 @@
     };
   }
 
-  async function analyzePhoto(photoDataUrl, story) {
+  async function analyzePhoto(photoDataUrl, story, round) {
     const cfg = getConfig();
     if (!cfg.key || !cfg.model) {
-      const base = await localAnalysis(photoDataUrl, story);
+      const base = await localAnalysis(photoDataUrl, story, round);
       return { analysis: base, aiUsed: false, reason: "未配置 AI" };
     }
     try {
       const small = await compressDataUrl(photoDataUrl, 1024, 0.8);
+      const variantNote = Number(round) > 0
+        ? `这是第 ${Number(round) + 1} 版文案，请换一个角度和说法，主文案不要重复上一版。\n`
+        : "";
       const prompt =
         "你是一位为老年人写纪念文案的中文编辑。请先仔细看照片：画面里是谁、在哪里、在做什么，光线、颜色和动作给人什么感觉；再结合老人写下的事件，判断他/她此刻的情绪，可能是开心、满足、平静、想念、热闹，也可能是淡淡的伤感。\n" +
         "文案要贴着照片里的具体细节和这种情绪写，不要写放之四海而皆准的空话。不同风格只改变语气和说法，内容仍然来自这张照片和这段心情。\n" +
+        variantNote +
         "只输出一个 JSON 对象，不要解释、不要代码块。\n" +
         'JSON 字段：{"scene":"照片里具体看到的内容，20字内","people":["人物"],"event":"发生的事，24字内","emotion":"从照片和文字里感受到的情绪，6字内","caption":"结合画面细节和情绪写一句温柔的话，34字内","title":"根据画面和情绪起4到8个字的小标题","blessing":"海报主文案，顺着情绪写一句祝福，最好带一个照片里的具体细节，20字内","keywords":["关键词"]}\n' +
         `风格要求：${STYLE_GUIDE[stateStyle()] || STYLE_GUIDE["文艺"]}\n` +
@@ -475,7 +484,7 @@
       return { analysis: normalizeAnalysis(parsed, story), aiUsed: true };
     } catch (e) {
       console.warn("AI 调用失败：", e);
-      const base = await localAnalysis(photoDataUrl, story);
+      const base = await localAnalysis(photoDataUrl, story, round);
       return { analysis: base, aiUsed: false, reason: e.message || "AI 调用失败" };
     }
   }

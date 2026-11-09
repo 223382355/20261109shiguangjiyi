@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#F7F2E8">
   <meta name="description" content="记忆相册 · 随手拍一张照片，选一种风格，生成一张带家人留言的纪念海报。">
   <title>记忆相册 · 把今天留成一幅画</title>
-  <link rel="stylesheet" href="style.css?v=20261109f">
+  <link rel="stylesheet" href="style.css?v=20261109i">
 </head>
 <body>
   <main class="app">
@@ -105,14 +105,17 @@
     <section class="panel" id="panel-result">
       <h1 class="panel-title center">海报做好啦</h1>
       <div class="poster-wrap">
-        <img id="poster-img" alt="生成的纪念海报">
+        <img id="poster-img" alt="生成的纪念海报" tabindex="0" role="button" aria-label="点击修改海报主文案" title="点击海报上的文案可以修改">
       </div>
       <div class="actions result-actions">
         <button class="btn btn-primary" id="change-style" type="button">不满意？换一个风格</button>
-        <button class="btn btn-ghost" id="random-style" type="button">随机风格</button>
+        <div class="actions result-pair">
+          <button class="btn btn-ghost" id="random-style" type="button">随机风格</button>
+          <button class="btn btn-ghost" id="change-copy" type="button">更换文案</button>
+        </div>
         <button class="btn btn-ghost" id="again" type="button">重新拍一张</button>
       </div>
-      <p class="random-hint" id="random-hint">随机风格：点一次换一种，6 种换完再从头上开始</p>
+      <p class="random-hint" id="random-hint">随机风格换配色；更换文案只换主文案；也可以直接点海报上的文案修改。</p>
       <div class="insight" id="insight"></div>
       <div class="actions">
         <a class="btn btn-primary" id="download" download="记忆相册-海报.jpg">保存海报</a>
@@ -137,6 +140,20 @@
       <div class="pulse"><span></span><span></span><span></span></div>
       <p class="loading-text" id="loading-text">正在看看这张照片…</p>
       <p class="loading-tip">大概需要 10～30 秒，请稍等</p>
+    </div>
+  </div>
+
+  <!-- 修改文案 -->
+  <div class="modal hidden" id="copy-modal">
+    <div class="modal-card">
+      <h2>改一改海报文案</h2>
+      <p class="modal-sub">这句话会显示在照片下面，最多 32 字。</p>
+      <label class="field-label" for="copy-input">主文案</label>
+      <textarea id="copy-input" rows="3" maxlength="32" placeholder="写一句你想说的话"></textarea>
+      <div class="row">
+        <button class="btn btn-ghost" id="copy-cancel" type="button">取消</button>
+        <button class="btn btn-primary" id="copy-save" type="button">保存</button>
+      </div>
     </div>
   </div>
 
@@ -197,8 +214,8 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="qrcode.js"></script>
-  <script src="poster.js?v=20261109f"></script>
-  <script src="sync.js?v=20261109f"></script>
-  <script src="app.js?v=20261109f"></script>
+  <script src="poster.js?v=20261109i"></script>
+  <script src="sync.js?v=20261109i"></script>
+  <script src="app.js?v=20261109i"></script>
 </body>
 </html>
