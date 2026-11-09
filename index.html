@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#F7F2E8">
   <meta name="description" content="记忆相册 · 随手拍一张照片，选一种风格，生成一张带家人留言的纪念海报。">
   <title>记忆相册 · 把今天留成一幅画</title>
-  <link rel="stylesheet" href="style.css?v=20261109q">
+  <link rel="stylesheet" href="style.css?v=20261109r">
 </head>
 <body>
   <main class="app">
@@ -57,8 +57,15 @@
     <!-- 第二步：说一句 -->
     <section class="panel" id="panel-2">
       <h1 class="panel-title">说一句，<br>今天发生了什么？</h1>
-      <p class="panel-sub">可以点话筒说话，也可以直接跳过</p>
+      <p class="panel-sub">可以点话筒说话，也可以直接写一句</p>
       <img class="shot-preview" id="shot-preview" alt="刚拍的照片">
+      <button class="btn btn-ghost retake-btn" id="retake-btn" type="button">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+          <circle cx="12" cy="13" r="4"></circle>
+        </svg>
+        重新选一张 / 重拍
+      </button>
       <textarea id="story-input" rows="4" maxlength="200" placeholder="比如：今天去公园散步，玉兰花开了，心情特别好。"></textarea>
       <div class="voice-row">
         <button class="voice-btn" id="voice-btn" type="button">
@@ -71,7 +78,7 @@
         <p class="voice-tip" id="voice-tip">说完会自动变成文字，可以再改</p>
       </div>
       <div class="row">
-        <button class="btn btn-ghost" id="skip-story" type="button">跳过</button>
+        <button class="btn btn-ghost" id="skip-story" type="button">退回上一步</button>
         <button class="btn btn-primary" id="next-story" type="button">下一步</button>
       </div>
     </section>
@@ -317,9 +324,9 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="qrcode.js"></script>
-  <script src="poster.js?v=20261109q"></script>
-  <script src="sync.js?v=20261109q"></script>
-  <script src="voice.js?v=20261109q"></script>
-  <script src="app.js?v=20261109q"></script>
+  <script src="poster.js?v=20261109r"></script>
+  <script src="sync.js?v=20261109r"></script>
+  <script src="voice.js?v=20261109r"></script>
+  <script src="app.js?v=20261109r"></script>
 </body>
 </html>

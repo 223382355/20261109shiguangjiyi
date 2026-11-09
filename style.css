@@ -187,8 +187,22 @@ body::before {
   object-fit: cover;
   border-radius: 20px;
   box-shadow: var(--shadow);
-  margin-bottom: 18px;
+  margin-bottom: 10px;
   background: #e7e0d3;
+}
+
+.retake-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: auto;
+  min-height: 44px;
+  padding: 10px 16px;
+  margin-bottom: 14px;
+  font-size: 15px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.6);
 }
 
 /* 按钮 */

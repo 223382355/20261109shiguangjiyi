@@ -586,12 +586,22 @@
   }
 
   // ---------------- 文字 ----------------
-  $("skip-story").addEventListener("click", () => {
+  function backToStep1() {
     stopVoiceIfListening();
+    state.photo = null;
+    state.exif = {};
     state.story = "";
     $("story-input").value = "";
-    setStep(3);
-  });
+    $("voice-tip").textContent = "说完会自动变成文字，可以再改";
+    $("shot-preview").removeAttribute("src");
+    $("camera-input").value = "";
+    $("album-input").value = "";
+    setStep(1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  $("skip-story").addEventListener("click", backToStep1);
+  $("retake-btn").addEventListener("click", backToStep1);
   $("story-input").addEventListener("input", () => {
     state.story = $("story-input").value.trim();
   });
