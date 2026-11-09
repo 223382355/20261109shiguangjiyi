@@ -940,13 +940,9 @@
   function updateAiHint() {
     const cfg = SnapStory.getConfig();
     const aiOk = !!(cfg.key && cfg.model);
-    const voiceOk = !!cfg.asrKey;
-    const parts = [];
-    if (aiOk) parts.push("照片 AI 已开启");
-    if (voiceOk) parts.push("语音转文字已开启");
     const hint = $("ai-hint");
-    hint.textContent = parts.length ? `${parts.join("；")}。点右上角 AI 可以设置。` : "";
-    hint.classList.toggle("hidden", parts.length === 0);
+    hint.textContent = aiOk ? "照片 AI 已开启。点右上角 AI 可以设置。" : "";
+    hint.classList.toggle("hidden", !aiOk);
   }
 
   $("ai-btn").addEventListener("click", () => {
@@ -964,11 +960,8 @@
     SnapStory.setConfig({ key, model, asrKey });
     updateAiHint();
     $("ai-modal").classList.add("hidden");
-    const parts = [];
-    if (key && model) parts.push("照片 AI 已开启");
-    if (asrKey) parts.push("语音转文字已开启");
     if (asrKey && voiceMode === "cloud") $("voice-tip").textContent = "语音已开启，点话筒说话";
-    toast(parts.length ? parts.join("；") : "已保存");
+    toast(key && model ? "照片 AI 已开启" : "已保存");
   });
 
   $("ai-clear").addEventListener("click", () => {

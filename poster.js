@@ -78,6 +78,24 @@
     "温暖": ["温暖", "陪伴", "家人", "一起", "吃饭", "家"],
     "清新": ["花", "草", "树", "山", "水", "海", "云", "春天"]
   };
+  const MOOD_BLESSINGS = {
+    "欢喜": "愿这份欢喜，常伴你左右",
+    "想念": "愿想念的人，也正想着你",
+    "安静": "愿日子清清凉凉，心里安安稳稳",
+    "热闹": "愿家里常热闹，心里常团圆",
+    "温暖": "愿有人陪你，把平常日子过暖",
+    "清新": "愿清风常来，日子清清亮亮",
+    "平静": "愿日子不慌不忙，心里安安稳稳"
+  };
+  const OBJECT_BLESSINGS = [
+    { re: /风扇|空调|凉风/, text: "愿这小风扇，吹来一屋清凉" },
+    { re: /花|开花|鲜花/, text: "愿这束花，开成日子的好心情" },
+    { re: /茶|喝茶/, text: "愿这杯茶，陪你慢慢过一天" },
+    { re: /饭|菜|饺子|面/, text: "愿这顿饭，吃出家的热乎气" },
+    { re: /蛋糕|生日/, text: "愿这一岁，平安喜乐" },
+    { re: /照片|相片/, text: "愿这张照片，留住今天的好" },
+    { re: /孙子|孙女|孩子|老伴|全家/, text: "愿身边的人，常笑常相伴" }
+  ];
   const WEATHER_CODES = {
     0: "晴", 1: "多云", 2: "多云", 3: "阴", 45: "有雾", 48: "有雾",
     51: "毛毛雨", 53: "毛毛雨", 55: "毛毛雨", 56: "冻雨", 57: "冻雨",
@@ -359,6 +377,29 @@
     return "平静";
   }
 
+  function localBlessing(event, mood) {
+    const text = String(event || "");
+    for (const item of OBJECT_BLESSINGS) {
+      if (item.re.test(text)) return item.text;
+    }
+    return MOOD_BLESSINGS[mood] || "愿今天的好，一直留在身边";
+  }
+
+  function localScene(event, tone) {
+    const text = String(event || "");
+    if (/风扇|空调/.test(text)) return "一台带来凉风的小风扇";
+    if (/花/.test(text)) return "一束开得正好的花";
+    if (/茶/.test(text)) return "一杯慢慢喝的茶";
+    if (/饭|菜|饺子|面/.test(text)) return "一桌家常饭菜";
+    if (/孙子|孙女|孩子|老伴|全家/.test(text)) return "和家里人在一起的画面";
+    if (tone) {
+      if (tone.green > 4) return "有绿植和自然光的日常";
+      if (tone.bright > 0.62) return "光线明亮的日常";
+      if (tone.warm > 16) return "色调温暖的日常";
+    }
+    return "一张记录当下生活的照片";
+  }
+
   async function localAnalysis(photoDataUrl, story) {
     const base = fallbackAnalysis(story);
     let tone = null;
@@ -370,6 +411,8 @@
     const tail = MOOD_TAILS[mood] || "";
     if (lead && tail) base.caption = `${lead}，${tail}`;
     base.emotion = mood;
+    base.scene = localScene(base.event, tone);
+    base.blessing = localBlessing(base.event, mood);
     return base;
   }
 
@@ -401,7 +444,7 @@
         "你是一位为老年人写纪念文案的中文编辑。请先仔细看照片：画面里是谁、在哪里、在做什么，光线、颜色和动作给人什么感觉；再结合老人写下的事件，判断他/她此刻的情绪，可能是开心、满足、平静、想念、热闹，也可能是淡淡的伤感。\n" +
         "文案要贴着照片里的具体细节和这种情绪写，不要写放之四海而皆准的空话。不同风格只改变语气和说法，内容仍然来自这张照片和这段心情。\n" +
         "只输出一个 JSON 对象，不要解释、不要代码块。\n" +
-        'JSON 字段：{"scene":"照片里具体看到的内容，20字内","people":["人物"],"event":"发生的事，24字内","emotion":"从照片和文字里感受到的情绪，6字内","caption":"结合画面细节和情绪写一句温柔的话，34字内","title":"根据画面和情绪起4到8个字的小标题","blessing":"顺着这种情绪说一句祝福，20字内","keywords":["关键词"]}\n' +
+        'JSON 字段：{"scene":"照片里具体看到的内容，20字内","people":["人物"],"event":"发生的事，24字内","emotion":"从照片和文字里感受到的情绪，6字内","caption":"结合画面细节和情绪写一句温柔的话，34字内","title":"根据画面和情绪起4到8个字的小标题","blessing":"海报主文案，顺着情绪写一句祝福，最好带一个照片里的具体细节，20字内","keywords":["关键词"]}\n' +
         `风格要求：${STYLE_GUIDE[stateStyle()] || STYLE_GUIDE["文艺"]}\n` +
         `老人写的事件：${story || "（没有填写文字，请只根据照片）"}\n` +
         "要求：所有内容使用简体中文，口语化、温暖，不要使用引号；不要编造照片里看不出来的人名、地点和事件。";
@@ -621,41 +664,32 @@
       ctx.fill();
     }
 
-    // 标题
-    let titleSize = 68;
-    ctx.font = font(titleSize, t.serif, true);
-    const title = recipe.title || FALLBACK_TITLES[recipe.style] || "美好时光";
-    while (ctx.measureText(title).width > 890 && titleSize > 44) {
-      titleSize -= 4;
-      ctx.font = font(titleSize, t.serif, true);
-    }
-    ctx.fillStyle = rgb(accent);
-    ctx.fillText(title, 90, 1136);
-
-    // 一句话文案
-    drawBlock(ctx, recipe.caption || "", 92, 1232, font(36, t.serif, false), rgb(text), 900, 52, 2);
+    // 主文案：祝福语放在原来标题的位置
+    const mainLine = recipe.blessing || FALLBACK_BLESSINGS[recipe.style] || "愿今天的好，一直留在身边";
+    drawBlock(ctx, mainLine, 90, 1124, font(50, t.serif, true), rgb(accent), 900, 64, 2);
 
     // 事件梗概
     if (recipe.event) {
-      drawBlock(ctx, "今天 · " + recipe.event, 92, 1342, font(29, false, false), rgb(soft), 880, 42, 2);
+      const eventLine = /^今天/.test(recipe.event) ? recipe.event : "今天 · " + recipe.event;
+      drawBlock(ctx, eventLine, 92, 1286, font(29, false, false), rgb(soft), 880, 42, 2);
     }
 
     // 分隔线
     ctx.strokeStyle = rgb(accent, 0.27);
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(92, 1448);
-    ctx.lineTo(720, 1448);
+    ctx.moveTo(92, 1366);
+    ctx.lineTo(720, 1366);
     ctx.stroke();
 
     // 家人留言
     ctx.font = font(28, false, true);
     ctx.fillStyle = rgb(accent);
-    ctx.fillText("家人的留言", 92, 1474);
+    ctx.fillText("家人的留言", 92, 1392);
 
     const comments = Array.isArray(recipe.comments) ? recipe.comments : [];
     const commentFont = font(29, false, false);
-    let y = 1524, totalLines = 0, shown = 0, overflow = false;
+    let y = 1442, totalLines = 0, shown = 0, overflow = false;
     if (comments.length) {
       for (const c of comments.slice(0, 3)) {
         const name = clamp(c.name || "家人", 10);
@@ -680,13 +714,8 @@
     } else {
       ctx.font = font(27, false, false);
       ctx.fillStyle = rgb(soft);
-      ctx.fillText("还没有留言，", 92, 1524);
-      ctx.fillText("扫码写下第一句话吧", 92, 1566);
-    }
-
-    // 底部祝福
-    if (!comments.length || (!overflow && totalLines <= 3)) {
-      drawBlock(ctx, recipe.blessing || "", 92, 1688, font(30, t.serif, false), rgb(accent), 600, 42, 2);
+      ctx.fillText("还没有留言，", 92, 1442);
+      ctx.fillText("扫码写下第一句话吧", 92, 1484);
     }
 
     // 品牌
