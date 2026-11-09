@@ -754,6 +754,7 @@
 
   function renderInsight(recipe, ai) {
     const box = $("insight");
+    if (!box) return;
     const parts = [];
     if (recipe.scene) parts.push(`<p><span>画面</span>${escapeHtml(recipe.scene)}</p>`);
     if (recipe.emotion) parts.push(`<p><span>情绪</span>${escapeHtml(recipe.emotion)}</p>`);
@@ -902,7 +903,6 @@
       $("random-hint").textContent = left
         ? `已换成「${style}」，还能换 ${left} 种`
         : `已换成「${style}」，6 种都看过了，再点从头开始`;
-      toast(`已换成「${style}」`);
     } catch (e) {
       console.error(e);
       $("random-hint").textContent = "换风格失败，请再试一次";
@@ -960,7 +960,6 @@
 
       await refreshRecipeView(recipe, ai);
       $("random-hint").textContent = `已换第 ${state.copyRound + 1} 版文案；可以继续换，或直接点海报修改。`;
-      toast("文案已换一版");
     } catch (e) {
       console.error(e);
       $("random-hint").textContent = "换文案失败，请再试一次";
@@ -1001,7 +1000,6 @@
       closeCopyEditor();
       await refreshRecipeView(state.recipe);
       $("random-hint").textContent = "文案已改成你写的这句；还可以点「更换文案」再换。";
-      toast("文案已保存");
     } catch (e) {
       console.error(e);
       toast("保存文案失败，请再试一次");
@@ -1010,15 +1008,20 @@
     }
   }
 
+  if (window.SnapVoice) {
+    SnapVoice.attach({
+      button: "copy-voice",
+      label: "copy-voice-label",
+      tip: "copy-voice-tip",
+      target: "copy-input",
+      maxLength: 32,
+      getKey: () => SnapStory.getConfig().asrKey
+    });
+  }
+
   $("random-style").addEventListener("click", changeRandomStyle);
   $("change-copy").addEventListener("click", changeCopy);
-  $("poster-img").addEventListener("click", openCopyEditor);
-  $("poster-img").addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      openCopyEditor();
-    }
-  });
+  $("edit-copy").addEventListener("click", openCopyEditor);
   $("copy-cancel").addEventListener("click", closeCopyEditor);
   $("copy-save").addEventListener("click", saveCopyEdit);
   $("copy-modal").addEventListener("click", (e) => {

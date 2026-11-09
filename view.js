@@ -14,12 +14,12 @@
   let localComments = [];
   let stopSync = null;
 
-  function toast(msg) {
+  function toast(msg, duration) {
     const el = $("toast");
     el.textContent = msg;
     el.classList.add("show");
     clearTimeout(toast._t);
-    toast._t = setTimeout(() => el.classList.remove("show"), 2400);
+    toast._t = setTimeout(() => el.classList.remove("show"), duration || 2400);
   }
 
   function esc(s) {
@@ -184,11 +184,9 @@
           await renderPoster();
         } catch (err) { console.error(err); }
 
+        toast("已成功留言。", 1000);
         if (syncKey && window.SnapSync) {
-          const ok = await SnapSync.publish(syncKey, comment);
-          toast(ok ? "留言已发送，老人那边会看到" : "已排进海报，但同步失败");
-        } else {
-          toast("留言已经排进海报");
+          SnapSync.publish(syncKey, comment).catch(() => { /* 本机已保存 */ });
         }
       });
 
@@ -258,11 +256,9 @@
         $("comment-content").value = "";
         $("copy-comment").classList.remove("hidden");
 
+        toast("已成功留言。", 1000);
         if (syncKey && window.SnapSync) {
-          const ok = await SnapSync.publish(syncKey, comment);
-          toast(ok ? "留言已发送，老人打开海报就能看到" : "已保存在本机，网络不通，可以复制发给家人");
-        } else {
-          toast("留言已保存，可以复制发给家人");
+          SnapSync.publish(syncKey, comment).catch(() => { /* 本机已保存 */ });
         }
       });
 

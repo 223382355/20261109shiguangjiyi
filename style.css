@@ -396,7 +396,7 @@ textarea:focus, input:focus { border-color: rgba(180, 85, 45, 0.55); }
   background: #fff;
 }
 
-.poster-wrap img { display: block; width: 100%; height: auto; cursor: pointer; }
+.poster-wrap img { display: block; width: 100%; height: auto; }
 
 .insight {
   background: rgba(255, 255, 255, 0.78);
