@@ -129,7 +129,7 @@
             mode = "cloud";
             setTip("浏览器语音连不上，再点一下用云端转写");
           } else {
-            keepVoice("语音服务连不上，请检查网络后再点一次，或点「用键盘话筒」");
+            keepVoice("语音服务连不上，请检查网络后再点一次，");
           }
           return;
         }
@@ -369,7 +369,7 @@
       if (mode === "cloud") {
         const key = getKey();
         if (!key) {
-          keepVoice("没有配置语音 Key，请再点一次，或点「用键盘话筒」");
+          keepVoice("没有配置语音 Key，请再点一次，");
           return;
         }
         startCloud(key);
@@ -384,7 +384,7 @@
       button.classList.add("keyboard-mode");
       if (keyboardBtn) keyboardBtn.classList.remove("hidden");
       if (label) label.textContent = "语音输入";
-      setTip("这个浏览器不支持网页语音，请点下面的「用键盘话筒」");
+      setTip("这个浏览器不支持网页语音，请稍后重试");
     } else {
       setTip("按住话筒说话，松开自动转文字");
     }
@@ -404,7 +404,7 @@
       if (mode === "keyboard") { focusKeyboard(); e.preventDefault(); return; }
       if (mode === "cloud") {
         const key = getKey();
-        if (!key) { keepVoice("没有配置语音 Key，请再按一次，或点「用键盘话筒」"); e.preventDefault(); return; }
+        if (!key) { keepVoice("没有配置语音 Key，请再按一次，"); e.preventDefault(); return; }
         startCloud(key);
       } else {
         startBrowser();

@@ -113,7 +113,7 @@
     } else if (state === "listening") {
       $("voice-label").textContent = "正在录音… 松开手指结束";
     } else {
-      $("voice-label").textContent = voiceSupported ? "按下说话，松开结束" : "用键盘话筒";
+      $("voice-label").textContent = voiceSupported ? "按下说话，松开结束" : "直接打字";
     }
   }
 
@@ -211,7 +211,7 @@
       $("voice-tip").textContent = "正在录音… 松开手指结束";
       voiceTimer = setTimeout(() => {
         if (voiceState === "listening") {
-          stopRecognition(voiceFinal ? "先转成文字，不够再点一次" : "没有识别到文字，请点「用键盘话筒」");
+          stopRecognition(voiceFinal ? "先转成文字，不够再点一次" : "没有识别到文字，请稍后重试");
           if (!voiceFinal) {
             setVoiceFallbackUI(true);
           }
@@ -244,15 +244,15 @@
         return;
       }
       if (code === "not-allowed" || code === "service-not-allowed") {
-        showVoiceFallback("没有麦克风权限。请在浏览器设置里允许，或点「用键盘话筒」");
+        showVoiceFallback("没有麦克风权限。请在浏览器设置里允许，");
       } else if (code === "no-speech") {
-        showVoiceFallback("没有听到声音，再点一次，或点「用键盘话筒」");
+        showVoiceFallback("没有听到声音，再点一次，");
       } else if (code === "network") {
-        showVoiceFallback("语音服务连不上，请点「用键盘话筒」，用手机键盘上的话筒说话");
+        showVoiceFallback("语音服务连不上，请稍后重试");
       } else if (code === "audio-capture") {
-        showVoiceFallback("没找到麦克风，请点「用键盘话筒」");
+        showVoiceFallback("没找到麦克风，请稍后重试");
       } else {
-        showVoiceFallback("语音识别没成功，请点「用键盘话筒」");
+        showVoiceFallback("语音识别没成功，请稍后重试");
       }
     };
 
@@ -271,14 +271,14 @@
       if (hadText) {
         $("voice-tip").textContent = "已转成文字，可以修改";
       } else {
-        showVoiceFallback("没有识别到文字。这个浏览器的语音服务可能连不上，请点「用键盘话筒」");
+        showVoiceFallback("没有识别到文字。这个浏览器的语音服务可能连不上，请稍后重试");
       }
     };
 
     function browserPressStart() {
       if (voiceState !== "idle") {
         const hadText = !!voiceFinal;
-        stopRecognition(hadText ? "已停止，可以继续修改文字" : "没有识别到文字，请点「用键盘话筒」");
+        stopRecognition(hadText ? "已停止，可以继续修改文字" : "没有识别到文字，请稍后重试");
         if (!hadText) setVoiceFallbackUI(true);
         return;
       }
@@ -294,7 +294,7 @@
       clearVoiceTimer();
       voiceTimer = setTimeout(() => {
         if (voiceState === "starting") {
-          stopRecognition("语音没有启动成功，请点「用键盘话筒」");
+          stopRecognition("语音没有启动成功，请稍后重试");
           setVoiceFallbackUI(true);
         }
       }, 4500);
@@ -303,7 +303,7 @@
         clearVoiceTimer();
         try { recognition.abort(); } catch (e2) { /* 忽略 */ }
         setVoiceUI("idle");
-        showVoiceFallback("语音启动失败，请点「用键盘话筒」");
+        showVoiceFallback("语音启动失败，请稍后重试");
       }
     }
 
@@ -367,12 +367,12 @@
   function micErrorMessage(err) {
     const name = err && err.name;
     if (name === "NotAllowedError" || name === "SecurityError") {
-      return "没有麦克风权限。请在浏览器设置里允许，或点「用键盘话筒」";
+      return "没有麦克风权限。请在浏览器设置里允许，";
     }
     if (name === "NotFoundError") {
-      return "没找到麦克风，请点「用键盘话筒」";
+      return "没找到麦克风，请稍后重试";
     }
-    return "打不开麦克风，请点「用键盘话筒」";
+    return "打不开麦克风，请稍后重试";
   }
 
   function initCloudVoice() {
@@ -425,7 +425,7 @@
 
     $("voice-tip").textContent = SnapStory.getConfig().asrKey
       ? "按住话筒说话，松开自动转文字"
-      : "首次使用请点右上角 AI 填语音 Key；也可以点「用键盘话筒」";
+      : "首次使用请点右上角 AI 填语音 Key；";
   }
 
   async function startCloudRecording(key) {
@@ -456,7 +456,7 @@
       } catch (e2) {
         stopMediaStream();
         setVoiceUI("idle");
-        showVoiceFallback("这个浏览器不支持网页录音，请点「用键盘话筒」");
+        showVoiceFallback("这个浏览器不支持网页录音，请稍后重试");
         return;
       }
     }
@@ -489,7 +489,7 @@
       stopMediaStream();
       mediaRecorder = null;
       setVoiceUI("idle");
-      showVoiceFallback("录音启动失败，请点「用键盘话筒」");
+      showVoiceFallback("录音启动失败，请稍后重试");
       return;
     }
 
