@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F7F2E8">
+  <meta name="description" content="家人做了一张纪念海报，扫码给TA留句话吧。">
+  <title>家人的留言 · 记忆相册</title>
+  <link rel="stylesheet" href="style.css?v=20261109a">
+</head>
+<body class="viewer-body">
+  <main class="app viewer">
+    <header class="top">
+      <a class="brand" href="./">
+        <span class="brand-mark">拍</span>
+        <span class="brand-text">记忆相册</span>
+      </a>
+      <a class="icon-btn wide" href="./">我也做一张</a>
+    </header>
+
+    <div class="view-loading" id="view-loading">
+      <div class="spinner"></div>
+      <p>正在打开海报…</p>
+    </div>
+
+    <div id="view-content" class="hidden">
+      <p class="eyebrow">家里有人把今天留下来了</p>
+
+      <div class="poster-wrap" id="poster-wrap">
+        <img id="poster-img" alt="家人的纪念海报">
+      </div>
+
+      <p class="view-meta" id="view-meta"></p>
+      <a class="btn btn-primary" id="download" download="记忆相册-海报.jpg">保存这张海报</a>
+
+      <div class="text-card hidden" id="text-card">
+        <p class="tc-date" id="tc-date"></p>
+        <h1 id="tc-title"></h1>
+        <p class="tc-caption" id="tc-caption"></p>
+        <p class="tc-story" id="tc-story"></p>
+        <p class="tc-blessing" id="tc-blessing"></p>
+        <p class="tc-note">图片加载失败或已过期时，这里显示文字版故事；留言仍会同步。</p>
+      </div>
+
+      <section class="comments-card">
+        <div class="comments-head">
+          <h2>家人的留言</h2>
+          <span class="comments-count" id="comments-count"></span>
+        </div>
+        <p class="comments-intro" id="comments-intro">写下想对TA说的话，留言会同步到老人的海报上。</p>
+        <div class="comment-list" id="comment-list"></div>
+
+        <form class="comment-form" id="comment-form">
+          <label class="field-label" for="comment-name">您的称呼</label>
+          <input id="comment-name" name="name" maxlength="12" autocomplete="nickname" placeholder="比如：小敏、二儿子">
+          <label class="field-label" for="comment-content">想说的话</label>
+          <textarea id="comment-content" name="content" maxlength="200" rows="4" placeholder="比如：奶奶笑得真好看，周末回家看您。"></textarea>
+          <div class="voice-row">
+            <button class="voice-btn" id="comment-voice" type="button">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="9" y="3" width="6" height="11" rx="3"></rect>
+                <path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"></path>
+              </svg>
+              <span id="comment-voice-label">点一下，说话</span>
+            </button>
+            <p class="voice-tip" id="comment-voice-tip">说的话会自动变成文字，可以再改</p>
+            <button class="voice-keyboard" id="comment-voice-keyboard" type="button">没反应？用键盘话筒</button>
+          </div>
+          <button class="btn btn-primary" id="comment-submit" type="submit">写下留言</button>
+          <button class="btn btn-ghost hidden" id="copy-comment" type="button">复制留言发给家人</button>
+          <p class="comment-tip" id="comment-tip">留言发送后，老人打开海报就能看到。</p>
+        </form>
+      </section>
+
+      <footer class="footer">
+        <p>这张海报只通过这个链接分享给家人。</p>
+        <p class="tiny">记忆相册 · 把今天留成一幅画</p>
+      </footer>
+    </div>
+
+    <div id="view-error" class="view-error hidden">
+      <h1>海报不见啦</h1>
+      <p>可能是链接不完整，或者这张海报只在生成它的手机上保存。请让家人重新发一次链接。</p>
+      <a class="btn btn-ghost" href="./">去做一张新的</a>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="qrcode.js"></script>
+  <script src="poster.js?v=20261109a"></script>
+  <script src="sync.js?v=20261109a"></script>
+  <script src="voice.js?v=20261109a"></script>
+  <script src="view.js?v=20261109a"></script>
+</body>
+</html>

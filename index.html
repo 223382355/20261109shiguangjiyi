@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F7F2E8">
+  <meta name="description" content="记忆相册 · 随手拍一张照片，选一种风格，生成一张带家人留言的纪念海报。">
+  <title>记忆相册 · 把今天留成一幅画</title>
+  <link rel="stylesheet" href="style.css?v=20261109a">
+</head>
+<body>
+  <main class="app">
+    <header class="top">
+      <a class="brand" href="./">
+        <span class="brand-mark">拍</span>
+        <span class="brand-text">记忆相册</span>
+      </a>
+      <div class="top-actions">
+        <button class="icon-btn" id="ai-btn" type="button" aria-label="AI 设置">AI</button>
+        <button class="icon-btn" id="help-btn" type="button" aria-label="使用帮助">?</button>
+      </div>
+    </header>
+
+    <div class="steps" aria-hidden="true">
+      <span class="step-dot active" data-step="1">1</span>
+      <span class="step-line"></span>
+      <span class="step-dot" data-step="2">2</span>
+      <span class="step-line"></span>
+      <span class="step-dot" data-step="3">3</span>
+    </div>
+
+    <!-- 第一步：拍照 -->
+    <section class="panel active" id="panel-1">
+      <h1 class="hero-title">把今天<br>留成一幅画</h1>
+      <p class="hero-sub">拍一张照片就好，剩下的交给我们</p>
+
+      <label class="camera-card" for="camera-input">
+        <span class="camera-icon" aria-hidden="true">
+          <svg viewBox="0 0 64 64" width="64" height="64"><rect x="6" y="16" width="52" height="38" rx="10" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="32" cy="35" r="11" fill="none" stroke="currentColor" stroke-width="4"/><rect x="22" y="9" width="20" height="9" rx="4" fill="currentColor"/></svg>
+        </span>
+        <span class="camera-title">点这里拍照</span>
+        <span class="camera-hint">会打开手机自带的相机</span>
+      </label>
+      <input id="camera-input" type="file" accept="image/*" capture="environment" hidden>
+      <input id="album-input" type="file" accept="image/*" hidden>
+
+      <button class="btn btn-ghost" id="album-btn" type="button">从相册里选一张</button>
+      <button class="btn btn-ghost btn-big" id="gallery-btn" type="button">查看最近的海报</button>
+    </section>
+
+    <!-- 第二步：说一句 -->
+    <section class="panel" id="panel-2">
+      <h1 class="panel-title">说一句，<br>今天发生了什么？</h1>
+      <p class="panel-sub">可以点话筒说话，也可以直接跳过</p>
+      <img class="shot-preview" id="shot-preview" alt="刚拍的照片">
+      <textarea id="story-input" rows="4" maxlength="200" placeholder="比如：今天去公园散步，玉兰花开了，心情特别好。"></textarea>
+      <div class="voice-row">
+        <button class="voice-btn" id="voice-btn" type="button">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="9" y="3" width="6" height="11" rx="3"></rect>
+            <path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"></path>
+          </svg>
+          <span id="voice-label">点一下，说话</span>
+        </button>
+        <p class="voice-tip" id="voice-tip">说完会自动变成文字，可以再改</p>
+        <button class="voice-keyboard" id="voice-keyboard" type="button">没反应？用键盘话筒</button>
+      </div>
+      <div class="row">
+        <button class="btn btn-ghost" id="skip-story" type="button">跳过</button>
+        <button class="btn btn-primary" id="next-story" type="button">下一步</button>
+      </div>
+    </section>
+
+    <!-- 第三步：选风格 -->
+    <section class="panel" id="panel-3">
+      <h1 class="panel-title">选一种喜欢的风格</h1>
+      <p class="panel-sub">选好后点下面按钮，海报马上做好</p>
+      <div class="styles" id="styles">
+        <button class="style-card" type="button" data-style="文艺">
+          <span class="style-swatch sw-wenyi"></span>
+          <span class="style-name">文艺</span>
+          <span class="style-desc">清淡 · 有诗意</span>
+        </button>
+        <button class="style-card" type="button" data-style="喜庆">
+          <span class="style-swatch sw-xiqing"></span>
+          <span class="style-name">喜庆</span>
+          <span class="style-desc">热闹 · 吉利</span>
+        </button>
+        <button class="style-card" type="button" data-style="美丽">
+          <span class="style-swatch sw-meili"></span>
+          <span class="style-name">美丽</span>
+          <span class="style-desc">明亮 · 温柔</span>
+        </button>
+        <button class="style-card" type="button" data-style="怀旧">
+          <span class="style-swatch sw-huaijiu"></span>
+          <span class="style-name">怀旧</span>
+          <span class="style-desc">老照片 · 回忆</span>
+        </button>
+      </div>
+      <button class="btn btn-primary btn-big" id="generate-btn" type="button">生成我的海报</button>
+      <p class="ai-hint hidden" id="ai-hint"></p>
+    </section>
+
+    <!-- 结果 -->
+    <section class="panel" id="panel-result">
+      <h1 class="panel-title center">海报做好啦</h1>
+      <div class="poster-wrap">
+        <img id="poster-img" alt="生成的纪念海报">
+      </div>
+      <div class="insight" id="insight"></div>
+      <div class="actions">
+        <a class="btn btn-primary" id="download" download="记忆相册-海报.jpg">保存海报</a>
+        <button class="btn btn-ghost" id="share" type="button">分享给家人</button>
+      </div>
+      <div class="qr-card">
+        <img id="qr-img" alt="留言页二维码">
+        <div class="qr-info">
+          <strong>让家人扫码留言</strong>
+          <p>家人的留言会自动出现在海报上</p>
+          <a id="page-link" href="#" target="_blank" rel="noopener">打开留言页面</a>
+        </div>
+      </div>
+      <p class="sync-note" id="sync-note">家人留言会自动出现在海报上</p>
+      <div class="actions result-actions">
+        <button class="btn btn-primary" id="change-style" type="button">不满意？换个风格</button>
+        <button class="btn btn-ghost" id="again" type="button">重新拍一张</button>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>海报和留言会同步给家人；免费通道约 3 小时后过期。</p>
+      <p class="tiny">过期后家人会看到文字版故事，留言仍可同步。</p>
+    </footer>
+  </main>
+
+  <!-- 生成中 -->
+  <div class="loading hidden" id="loading">
+    <div class="loading-card">
+      <div class="pulse"><span></span><span></span><span></span></div>
+      <p class="loading-text" id="loading-text">正在看看这张照片…</p>
+      <p class="loading-tip">大概需要 10～30 秒，请稍等</p>
+    </div>
+  </div>
+
+  <!-- AI 设置 -->
+  <div class="modal hidden" id="ai-modal">
+    <div class="modal-card">
+      <h2>AI 与语音设置（可选）</h2>
+      <p class="modal-sub">AI 调用在浏览器里直接完成。Key 只保存在本机浏览器，不会上传到我们的服务器。</p>
+      <label class="field-label" for="ark-key">火山方舟 API Key（照片识别）</label>
+      <input id="ark-key" type="password" autocomplete="off" placeholder="粘贴你的 Ark API Key">
+      <label class="field-label" for="ark-model">模型 / 推理接入点 ID</label>
+      <input id="ark-model" type="text" autocomplete="off" placeholder="例如 ep-2024xxxx 或 doubao-…-vision-…">
+      <p class="field-tip">在火山方舟控制台「在线推理」里复制接入点 ID；没有就留空，系统会用本地模板生成海报。</p>
+      <label class="field-label" for="asr-key">硅基流动 API Key（语音转文字）</label>
+      <input id="asr-key" type="password" autocomplete="off" placeholder="粘贴硅基流动 API Key，用于录音转文字">
+      <p class="field-tip">在 <a href="https://cloud.siliconflow.cn" target="_blank" rel="noopener">硅基流动控制台</a> 注册后创建 API Key。只保存在本机；不填时用浏览器语音或键盘话筒。</p>
+      <div class="row">
+        <button class="btn btn-ghost" id="ai-clear" type="button">清除</button>
+        <button class="btn btn-primary" id="ai-save" type="button">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 最近的海报 -->
+  <div class="modal hidden" id="gallery-modal">
+    <div class="modal-card gallery-card">
+      <button class="icon-btn gallery-close" id="gallery-close" type="button" aria-label="关闭">×</button>
+      <div id="gallery-list-view">
+        <h2>最近的海报</h2>
+        <p class="modal-sub">这台手机上最近生成的 6 张，点一张看照片和留言。</p>
+        <div class="gallery-grid" id="gallery-grid"></div>
+        <p class="gallery-empty hidden" id="gallery-empty">还没有生成过海报，先做一张吧。</p>
+      </div>
+      <div class="hidden" id="gallery-detail-view">
+        <button class="gallery-back" id="gallery-back" type="button">← 返回最近的海报</button>
+        <h2 id="history-title">海报</h2>
+        <img id="history-poster" alt="历史海报">
+        <div class="history-comments" id="history-comments"></div>
+        <a class="btn btn-primary" id="history-page-link" target="_blank" rel="noopener">打开留言页</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 帮助 -->
+  <div class="modal hidden" id="help-modal">
+    <div class="modal-card">
+      <h2>三步做一张海报</h2>
+      <ol class="help-list">
+        <li><strong>一拍</strong>：点大按钮，用手机相机拍一张。</li>
+        <li><strong>一说</strong>：点话筒说话，会自动变成文字；也可以直接写或跳过。</li>
+        <li><strong>一选</strong>：选文艺、喜庆、美丽、怀旧中的一种。</li>
+      </ol>
+      <p class="modal-sub">海报右下角有二维码，家人扫码就能留言。</p>
+      <button class="btn btn-primary" id="help-close" type="button">知道了</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="qrcode.js"></script>
+  <script src="poster.js?v=20261109a"></script>
+  <script src="sync.js?v=20261109a"></script>
+  <script src="app.js?v=20261109a"></script>
+</body>
+</html>
