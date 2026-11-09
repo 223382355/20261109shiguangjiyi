@@ -98,7 +98,7 @@
         stopped = false;
         hadError = false;
         setUI("listening");
-        setTip("请说话，说完点一下结束");
+        setTip("正在录音… 松开手指结束");
         timer = setTimeout(() => stopBrowser(), 30000);
       };
 
@@ -167,7 +167,7 @@
       stopped = false;
       hadError = false;
       setUI("starting");
-      setTip("正在启动语音… 再点一下取消");
+      setTip("正在启动麦克风…");
       clearTimer();
       timer = setTimeout(() => {
         if (state === "starting") {

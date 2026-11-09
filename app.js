@@ -109,11 +109,11 @@
     btn.classList.toggle("recording", state === "listening");
     btn.classList.toggle("starting", state === "starting");
     if (state === "starting") {
-      $("voice-label").textContent = voiceMode === "cloud" ? "正在打开麦克风…" : "正在启动… 再点一下取消";
+      $("voice-label").textContent = "正在打开麦克风…";
     } else if (state === "listening") {
-      $("voice-label").textContent = voiceMode === "cloud" ? "正在录音… 点一下结束" : "正在听… 点一下结束";
+      $("voice-label").textContent = "正在录音… 松开手指结束";
     } else {
-      $("voice-label").textContent = voiceSupported ? "点一下，说话" : "用键盘话筒";
+      $("voice-label").textContent = voiceSupported ? "按下说话，松开结束" : "用键盘话筒";
     }
   }
 
@@ -208,7 +208,7 @@
       voiceError = "";
       setVoiceUI("listening");
       setVoiceFallbackUI(false);
-      $("voice-tip").textContent = "请马上说话，说完点一下结束";
+      $("voice-tip").textContent = "正在录音… 松开手指结束";
       voiceTimer = setTimeout(() => {
         if (voiceState === "listening") {
           stopRecognition(voiceFinal ? "先转成文字，不够再点一次" : "没有识别到文字，请点「用键盘话筒」");
@@ -275,13 +275,11 @@
       }
     };
 
-    btn.addEventListener("click", () => {
+    function browserPressStart() {
       if (voiceState !== "idle") {
         const hadText = !!voiceFinal;
         stopRecognition(hadText ? "已停止，可以继续修改文字" : "没有识别到文字，请点「用键盘话筒」");
-        if (!hadText) {
-          setVoiceFallbackUI(true);
-        }
+        if (!hadText) setVoiceFallbackUI(true);
         return;
       }
 
@@ -291,7 +289,7 @@
       voiceError = "";
       setVoiceUI("starting");
       setVoiceFallbackUI(false);
-      $("voice-tip").textContent = "正在启动语音… 再点一下取消";
+      $("voice-tip").textContent = "正在启动麦克风…";
 
       clearVoiceTimer();
       voiceTimer = setTimeout(() => {
@@ -301,15 +299,26 @@
         }
       }, 4500);
 
-      try {
-        recognition.start();
-      } catch (e) {
+      try { recognition.start(); } catch (e) {
         clearVoiceTimer();
         try { recognition.abort(); } catch (e2) { /* 忽略 */ }
         setVoiceUI("idle");
         showVoiceFallback("语音启动失败，请点「用键盘话筒」");
       }
-    });
+    }
+
+    function browserPressEnd() {
+      if (voiceState === "listening" || voiceState === "starting") {
+        stopRecognition();
+      }
+    }
+
+    btn.addEventListener("mousedown", browserPressStart);
+    btn.addEventListener("mouseup", browserPressEnd);
+    btn.addEventListener("mouseleave", browserPressEnd);
+    btn.addEventListener("touchstart", browserPressStart, { passive: false });
+    btn.addEventListener("touchend", browserPressEnd, { passive: false });
+    btn.addEventListener("touchcancel", browserPressEnd, { passive: false });
 
     if (keyboardBtn) {
       keyboardBtn.addEventListener("click", focusKeyboardVoice);
