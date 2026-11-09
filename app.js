@@ -1015,6 +1015,7 @@
       tip: "copy-voice-tip",
       target: "copy-input",
       maxLength: 32,
+      replace: true,
       getKey: () => SnapStory.getConfig().asrKey
     });
   }

@@ -12,6 +12,7 @@
     const tip = $(opts.tip);
     const keyboardBtn = opts.keyboard ? $(opts.keyboard) : null;
     const maxLength = opts.maxLength || 200;
+    const replaceMode = !!opts.replace;
     const getKey = opts.getKey || (() => "");
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const canRecord = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
@@ -29,6 +30,7 @@
     let chunks = [];
     let cancelled = false;
     let transcribing = false;
+    let cleared = false;
 
     function setTip(message, isError) {
       if (!tip) return;
@@ -68,9 +70,9 @@
       setTip("请点手机键盘上的话筒图标说话，说完文字会出现在输入框里");
     }
 
-    function appendText(text) {
+    function applyText(text) {
       if (!text) return;
-      target.value = (target.value + text).slice(0, maxLength);
+      target.value = (replaceMode ? text : target.value + text).slice(0, maxLength);
       target.dispatchEvent(new Event("input", { bubbles: true }));
     }
 
@@ -106,6 +108,11 @@
           const text = event.results[i][0].transcript;
           if (event.results[i].isFinal) finalText += text;
           else interim += text;
+        }
+        // 替换模式：说出第一句话时才清空旧文案，说错了不影响原来写的内容
+        if (replaceMode && !cleared && (finalText || interim)) {
+          cleared = true;
+          base = "";
         }
         target.value = (base + finalText + interim).slice(0, maxLength);
         if (finalText || interim) setTip("已转成文字，可以修改");
@@ -156,6 +163,7 @@
     function startBrowser() {
       base = target.value;
       finalText = "";
+      cleared = false;
       stopped = false;
       hadError = false;
       setUI("starting");
@@ -333,7 +341,7 @@
           setTip("没有识别到文字，请再说一次", true);
           return;
         }
-        appendText(text);
+        applyText(text);
         setTip("已转成文字，可以修改");
       } catch (e) {
         if (e.name === "AbortError") setTip("转文字超时，请检查网络后再试", true);

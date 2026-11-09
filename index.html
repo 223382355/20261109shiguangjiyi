@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#F7F2E8">
   <meta name="description" content="记忆相册 · 随手拍一张照片，选一种风格，生成一张带家人留言的纪念海报。">
   <title>记忆相册 · 把今天留成一幅画</title>
-  <link rel="stylesheet" href="style.css?v=20261109j">
+  <link rel="stylesheet" href="style.css?v=20261109k">
 </head>
 <body>
   <main class="app">
@@ -77,22 +77,91 @@
       <p class="panel-sub">选好后点下面按钮，海报马上做好</p>
       <div class="styles" id="styles">
         <button class="style-card" type="button" data-style="文艺">
-          <span class="style-swatch sw-wenyi"></span>
+          <span class="style-swatch" aria-hidden="true">
+            <svg viewBox="0 0 160 86" preserveAspectRatio="xMidYMid slice">
+              <rect width="160" height="86" fill="#f6f1e6"/>
+              <circle cx="124" cy="22" r="9" fill="#ead9b6"/>
+              <path d="M0 64 L30 42 L52 60 L74 38 L98 62 L120 48 L160 66 V86 H0 Z" fill="#cdd3c0"/>
+              <path d="M0 74 L34 58 L66 72 L98 56 L130 72 L160 62 V86 H0 Z" fill="#b3bba4" opacity="0.92"/>
+              <path d="M30 80 C 44 60, 58 48, 78 40" stroke="#8a6f52" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+              <path d="M56 52 C 62 48, 66 46, 72 45" stroke="#8a6f52" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+              <g fill="#e3a6a2">
+                <circle cx="78" cy="40" r="3.2"/>
+                <circle cx="70" cy="45" r="2.6"/>
+                <circle cx="62" cy="52" r="2.2"/>
+              </g>
+              <g fill="#f2c9c4">
+                <circle cx="75" cy="43" r="1.4"/>
+                <circle cx="67" cy="47.5" r="1.2"/>
+              </g>
+            </svg>
+          </span>
           <span class="style-name">文艺</span>
           <span class="style-desc">清淡 · 有诗意</span>
         </button>
         <button class="style-card" type="button" data-style="喜庆">
-          <span class="style-swatch sw-xiqing"></span>
+          <span class="style-swatch" aria-hidden="true">
+            <svg viewBox="0 0 160 86" preserveAspectRatio="xMidYMid slice">
+              <rect width="160" height="86" fill="#9c211b"/>
+              <ellipse cx="80" cy="92" rx="110" ry="42" fill="#c0392b" opacity="0.75"/>
+              <circle cx="26" cy="18" r="2" fill="#f4c969" opacity="0.85"/>
+              <circle cx="134" cy="24" r="2" fill="#f4c969" opacity="0.85"/>
+              <circle cx="40" cy="60" r="1.6" fill="#f4c969" opacity="0.6"/>
+              <circle cx="122" cy="62" r="1.6" fill="#f4c969" opacity="0.6"/>
+              <line x1="80" y1="6" x2="80" y2="18" stroke="#f4c969" stroke-width="2"/>
+              <rect x="73" y="16" width="14" height="6" rx="2" fill="#f4c969"/>
+              <ellipse cx="80" cy="42" rx="21" ry="23" fill="#e14b31" stroke="#f4c969" stroke-width="2"/>
+              <path d="M62 34 H98 M60 42 H100 M62 50 H98" stroke="#f4c969" stroke-width="1.3" opacity="0.8"/>
+              <rect x="73" y="63" width="14" height="5" rx="2" fill="#f4c969"/>
+              <path d="M75 68 L73 79 M80 68 L80 82 M85 68 L87 79" stroke="#f4c969" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </span>
           <span class="style-name">喜庆</span>
           <span class="style-desc">热闹 · 吉利</span>
         </button>
         <button class="style-card" type="button" data-style="美丽">
-          <span class="style-swatch sw-meili"></span>
+          <span class="style-swatch" aria-hidden="true">
+            <svg viewBox="0 0 160 86" preserveAspectRatio="xMidYMid slice">
+              <rect width="160" height="86" fill="#fdecec"/>
+              <rect y="62" width="160" height="24" fill="#e7d3e2" opacity="0.5"/>
+              <path d="M52 84 C 55 66, 59 54, 66 44" stroke="#9fb28a" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <path d="M80 84 C 80 66, 81 52, 83 40" stroke="#9fb28a" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <path d="M108 84 C 104 68, 99 58, 93 48" stroke="#9fb28a" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <path d="M62 66 C 56 62, 52 62, 48 64" stroke="#9fb28a" stroke-width="1.6" fill="none"/>
+              <path d="M98 62 C 104 58, 108 58, 112 60" stroke="#9fb28a" stroke-width="1.6" fill="none"/>
+              <g transform="translate(66 40)">
+                <circle cx="0" cy="-6.5" r="5.5" fill="#f2a6b3"/><circle cx="6.5" cy="-1" r="5.5" fill="#eda0ad"/><circle cx="4" cy="6" r="5.5" fill="#f2a6b3"/><circle cx="-4" cy="6" r="5.5" fill="#eda0ad"/><circle cx="-6.5" cy="-1" r="5.5" fill="#f2a6b3"/><circle r="3.4" fill="#f7d774"/>
+              </g>
+              <g transform="translate(84 34)">
+                <circle cx="0" cy="-5.5" r="4.8" fill="#f6b8c8"/><circle cx="5.5" cy="-1" r="4.8" fill="#f2a6b3"/><circle cx="3.5" cy="5" r="4.8" fill="#f6b8c8"/><circle cx="-3.5" cy="5" r="4.8" fill="#f2a6b3"/><circle cx="-5.5" cy="-1" r="4.8" fill="#f6b8c8"/><circle r="3" fill="#fff6e6"/>
+              </g>
+              <g transform="translate(94 46)">
+                <circle cx="0" cy="-4.5" r="4" fill="#f3b8a6"/><circle cx="4.5" cy="0" r="4" fill="#eda0ad"/><circle cx="0" cy="4.5" r="4" fill="#f3b8a6"/><circle cx="-4.5" cy="0" r="4" fill="#eda0ad"/><circle r="2.6" fill="#f7d774"/>
+              </g>
+            </svg>
+          </span>
           <span class="style-name">美丽</span>
           <span class="style-desc">明亮 · 温柔</span>
         </button>
         <button class="style-card" type="button" data-style="怀旧">
-          <span class="style-swatch sw-huaijiu"></span>
+          <span class="style-swatch" aria-hidden="true">
+            <svg viewBox="0 0 160 86" preserveAspectRatio="xMidYMid slice">
+              <rect width="160" height="86" fill="#ecdfc8"/>
+              <rect y="64" width="160" height="22" fill="#d9c6a6" opacity="0.55"/>
+              <g transform="translate(46 16) rotate(-6)">
+                <rect width="46" height="54" rx="2" fill="#f8f2e4" stroke="#c9b28c"/>
+                <rect x="5" y="5" width="36" height="34" fill="#c8a878"/>
+                <circle cx="16" cy="18" r="6" fill="#e5c795"/>
+                <path d="M5 33 L17 24 L27 31 L41 18 L41 39 L5 39 Z" fill="#a98d63"/>
+              </g>
+              <g transform="translate(82 20) rotate(5)">
+                <rect width="46" height="54" rx="2" fill="#f8f2e4" stroke="#c9b28c"/>
+                <rect x="5" y="5" width="36" height="34" fill="#bfa171"/>
+                <circle cx="31" cy="14" r="5" fill="#e5c795"/>
+                <path d="M5 35 L15 27 L25 33 L41 20 L41 39 L5 39 Z" fill="#9c8158"/>
+              </g>
+            </svg>
+          </span>
           <span class="style-name">怀旧</span>
           <span class="style-desc">老照片 · 回忆</span>
         </button>
@@ -109,7 +178,7 @@
       </div>
       <div class="actions result-actions">
         <div class="actions result-pair">
-          <button class="btn btn-primary" id="change-style" type="button">换一个风格</button>
+          <button class="btn btn-ghost" id="change-style" type="button">换一个风格</button>
           <button class="btn btn-ghost" id="random-style" type="button">随机风格</button>
         </div>
         <div class="actions result-pair">
@@ -226,9 +295,9 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="qrcode.js"></script>
-  <script src="poster.js?v=20261109j"></script>
-  <script src="sync.js?v=20261109j"></script>
-  <script src="voice.js?v=20261109j"></script>
-  <script src="app.js?v=20261109j"></script>
+  <script src="poster.js?v=20261109k"></script>
+  <script src="sync.js?v=20261109k"></script>
+  <script src="voice.js?v=20261109k"></script>
+  <script src="app.js?v=20261109k"></script>
 </body>
 </html>
