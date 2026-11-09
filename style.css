@@ -422,7 +422,14 @@ textarea:focus, input:focus { border-color: rgba(180, 85, 45, 0.55); }
 
 .actions { display: flex; gap: 12px; }
 .actions .btn { flex: 1; }
-.result-actions { margin-top: 18px; }
+.result-actions { margin-top: 18px; flex-direction: column; }
+.random-hint {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--soft);
+}
 
 .qr-card {
   display: flex;

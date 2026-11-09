@@ -16,7 +16,7 @@
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const canRecord = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
 
-    let mode = SpeechRecognition ? "browser" : (canRecord && getKey() ? "cloud" : "keyboard");
+    let mode = (canRecord && getKey()) ? "cloud" : (SpeechRecognition ? "browser" : "keyboard");
     let state = "idle";
     let recognition = null;
     let base = "";
@@ -46,7 +46,7 @@
       } else if (next === "listening") {
         label.textContent = mode === "cloud" ? "正在录音… 点一下结束" : "正在听… 点一下结束";
       } else {
-        label.textContent = mode === "keyboard" ? "用键盘话筒" : "点一下，说话";
+        label.textContent = mode === "keyboard" ? "语音输入" : "点一下，说话";
       }
     }
 
@@ -57,12 +57,9 @@
       }
     }
 
-    function useKeyboard(message, isError) {
-      mode = "keyboard";
-      button.classList.add("keyboard-mode");
-      if (keyboardBtn) keyboardBtn.classList.remove("hidden");
+    function keepVoice(message, isError) {
       setUI("idle");
-      setTip(message || "这个浏览器不支持网页语音，点按钮后用手机键盘上的话筒", isError !== false);
+      setTip(message || "没有听清，请再点一次", isError !== false);
     }
 
     function focusKeyboard() {
@@ -111,7 +108,7 @@
           else interim += text;
         }
         target.value = (base + finalText + interim).slice(0, maxLength);
-        if (finalText) setTip("已转成文字，可以修改");
+        if (finalText || interim) setTip("已转成文字，可以修改");
       };
 
       recognition.onerror = (event) => {
@@ -120,29 +117,38 @@
         const code = event.error || "";
         if (code === "aborted") return;
         setUI("idle");
-        if ((code === "network" || code === "service-not-allowed") && canRecord && getKey()) {
-          mode = "cloud";
-          setTip("浏览器语音连不上，再点一下用云端转写");
+        if (code === "network" || code === "service-not-allowed") {
+          if (canRecord && getKey()) {
+            mode = "cloud";
+            setTip("浏览器语音连不上，再点一下用云端转写");
+          } else {
+            keepVoice("语音服务连不上，请检查网络后再点一次，或点「用键盘话筒」");
+          }
           return;
         }
         if (code === "not-allowed" || code === "audio-capture") {
-          useKeyboard("没有麦克风权限。请允许麦克风，或点「用键盘话筒」");
+          keepVoice("没有麦克风权限。请在浏览器设置里允许，然后再点一次");
         } else {
-          useKeyboard("语音没成功，请再试一次，或点「用键盘话筒」");
+          keepVoice("没有听清，请再点一次");
         }
       };
 
       recognition.onend = () => {
         clearTimer();
-        const hasText = !!finalText;
         setUI("idle");
         if (hadError || stopped) {
           hadError = false;
           stopped = false;
           return;
         }
-        if (hasText) setTip("已转成文字，可以修改");
-        else useKeyboard("没有识别到文字，请再试一次，或点「用键盘话筒」");
+        const endedBase = base;
+        const endedFinal = finalText;
+        setTimeout(() => {
+          if (state !== "idle" || base !== endedBase) return;
+          const spoken = (target.value.slice(endedBase.length) || "").trim();
+          if (spoken || endedFinal) setTip("已转成文字，可以修改");
+          else keepVoice("没有听清，请再点一次");
+        }, 600);
       };
       return true;
     }
@@ -158,15 +164,14 @@
       timer = setTimeout(() => {
         if (state === "starting") {
           stopBrowser();
-          useKeyboard("语音没有启动成功，请用键盘话筒");
+          keepVoice("语音没有启动成功，请再点一次");
         }
       }, 8000);
       try {
         recognition.start();
       } catch (e) {
         clearTimer();
-        setUI("idle");
-        useKeyboard("语音启动失败，请用键盘话筒");
+        keepVoice("语音启动失败，请再点一次");
       }
     }
 
@@ -183,7 +188,8 @@
         }, 800);
       }
       setUI("idle");
-      setTip(finalText ? "已停止，可以继续修改文字" : "没有识别到文字，请再试一次");
+      const spoken = (target.value.slice(base.length) || "").trim();
+      setTip(spoken || finalText ? "已停止，可以继续修改文字" : "没有听清，请再点一次");
     }
 
     // ---------------- 录音上传，云端转文字 ----------------
@@ -227,7 +233,7 @@
           recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
         } catch (e) {
           stopStream();
-          useKeyboard("这个浏览器不支持网页录音，请用键盘话筒");
+          keepVoice("这个浏览器不支持网页录音，请再点一次");
           return;
         }
 
@@ -258,7 +264,7 @@
         } catch (e) {
           stopStream();
           recorder = null;
-          useKeyboard("录音启动失败，请用键盘话筒");
+          keepVoice("录音启动失败，请再点一次");
           return;
         }
         setUI("listening");
@@ -268,9 +274,9 @@
       }).catch((err) => {
         const name = err && err.name;
         if (name === "NotAllowedError" || name === "SecurityError") {
-          useKeyboard("没有麦克风权限。请允许麦克风，或点「用键盘话筒」");
+          keepVoice("没有麦克风权限。请在浏览器设置里允许，然后再点一次");
         } else {
-          useKeyboard("打不开麦克风，请用键盘话筒");
+          keepVoice("打不开麦克风，请再点一次");
         }
       });
     }
@@ -316,7 +322,7 @@
         if (!resp.ok) {
           const msg = data.message || (data.error && data.error.message) || ("HTTP " + resp.status);
           if (resp.status === 401 || resp.status === 403) {
-            useKeyboard("语音 Key 无效，请让家人重新配置，或点「用键盘话筒」");
+            keepVoice("语音 Key 无效，请让家人重新配置，然后再点一次");
           } else {
             setTip("语音转文字失败：" + msg, true);
           }
@@ -355,7 +361,7 @@
       if (mode === "cloud") {
         const key = getKey();
         if (!key) {
-          useKeyboard("没有配置语音 Key，请用键盘话筒");
+          keepVoice("没有配置语音 Key，请再点一次，或点「用键盘话筒」");
           return;
         }
         startCloud(key);
@@ -369,8 +375,8 @@
     if (mode === "keyboard") {
       button.classList.add("keyboard-mode");
       if (keyboardBtn) keyboardBtn.classList.remove("hidden");
-      if (label) label.textContent = "用键盘话筒";
-      setTip("这个浏览器不支持网页语音，点按钮后用手机键盘上的话筒");
+      if (label) label.textContent = "语音输入";
+      setTip("这个浏览器不支持网页语音，请点下面的「用键盘话筒」");
     } else {
       setTip("点一下说话，说完会自动变成文字");
     }

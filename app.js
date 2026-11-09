@@ -8,7 +8,9 @@
     story: "",
     style: "文艺",
     recipe: null,
-    pageUrl: ""
+    pageUrl: "",
+    randomQueue: [],
+    randomBusy: false
   };
 
   // ---------------- 通用 UI ----------------
@@ -717,6 +719,7 @@
 
   async function showResult(recipe, ai) {
     state.recipe = recipe;
+    resetRandomCycle();
     await SnapStory.renderPoster(posterCanvas, recipe);
 
     const dataUrl = posterCanvas.toDataURL("image/jpeg", 0.92);
@@ -813,12 +816,89 @@
     toast("正在保存，若没反应请长按海报保存");
   });
 
+  function resetRandomCycle() {
+    state.randomQueue = [];
+    state.randomBusy = false;
+    const hint = $("random-hint");
+    if (hint) hint.textContent = "随机风格：点一次换一种，6 种换完再从头上开始";
+    const btn = $("random-style");
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "随机风格";
+    }
+  }
+
+  async function changeRandomStyle() {
+    if (!state.recipe || state.randomBusy) return;
+    const styles = (SnapStory.RANDOM_STYLES || []).slice();
+    if (!styles.length) return;
+
+    if (!state.randomQueue.length) {
+      state.randomQueue = styles;
+      for (let i = state.randomQueue.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [state.randomQueue[i], state.randomQueue[j]] = [state.randomQueue[j], state.randomQueue[i]];
+      }
+      if (state.randomQueue[0] === state.recipe.style && state.randomQueue.length > 1) {
+        state.randomQueue.push(state.randomQueue.shift());
+      }
+    }
+
+    const style = state.randomQueue.shift();
+    const btn = $("random-style");
+    state.randomBusy = true;
+    btn.disabled = true;
+    btn.textContent = "正在换…";
+
+    try {
+      const recipe = state.recipe;
+      recipe.style = style;
+      if (!recipe.aiUsed) {
+        recipe.title = SnapStory.FALLBACK_TITLES[style] || recipe.title;
+        recipe.caption = SnapStory.FALLBACK_CAPTIONS[style] || recipe.caption;
+        recipe.blessing = SnapStory.FALLBACK_BLESSINGS[style] || recipe.blessing;
+      }
+      SnapStory.setCurrentStyle(style);
+      await SnapStory.renderPoster(posterCanvas, recipe);
+      const dataUrl = posterCanvas.toDataURL("image/jpeg", 0.92);
+      $("poster-img").src = dataUrl;
+      $("download").href = dataUrl;
+
+      const pageUrl = SnapStory.pageUrlFor(recipe);
+      state.pageUrl = pageUrl;
+      $("page-link").href = pageUrl;
+      $("qr-img").src = SnapStory.makeQrCanvas(pageUrl, 560).toDataURL("image/png");
+      SnapStory.savePoster(recipe);
+
+      if (recipe.syncKey && window.SnapSync) {
+        SnapSync.uploadPoster(dataUrl, `snapstory-${recipe.id}.jpg`, recipe.syncKey)
+          .catch(() => { /* 忽略，留言仍可同步 */ });
+      }
+
+      const left = state.randomQueue.length;
+      $("random-hint").textContent = left
+        ? `已换成「${style}」，还能换 ${left} 种`
+        : `已换成「${style}」，6 种都看过了，再点从头开始`;
+      toast(`已换成「${style}」`);
+    } catch (e) {
+      console.error(e);
+      toast("换风格失败，请再试一次");
+    } finally {
+      state.randomBusy = false;
+      btn.disabled = false;
+      btn.textContent = "随机风格";
+    }
+  }
+
+  $("random-style").addEventListener("click", changeRandomStyle);
+
   $("change-style").addEventListener("click", () => {
     if (stopCommentSync) {
       stopCommentSync();
       stopCommentSync = null;
     }
     clearTimeout(refreshTimer);
+    resetRandomCycle();
     setStep(3);
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
@@ -829,6 +909,7 @@
       stopCommentSync = null;
     }
     clearTimeout(refreshTimer);
+    resetRandomCycle();
     stopVoiceIfListening();
     state.photo = null;
     state.exif = {};

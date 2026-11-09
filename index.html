@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#F7F2E8">
   <meta name="description" content="记忆相册 · 随手拍一张照片，选一种风格，生成一张带家人留言的纪念海报。">
   <title>记忆相册 · 把今天留成一幅画</title>
-  <link rel="stylesheet" href="style.css?v=20261109a">
+  <link rel="stylesheet" href="style.css?v=20261109c">
 </head>
 <body>
   <main class="app">
@@ -107,6 +107,12 @@
       <div class="poster-wrap">
         <img id="poster-img" alt="生成的纪念海报">
       </div>
+      <div class="actions result-actions">
+        <button class="btn btn-primary" id="change-style" type="button">不满意？换一个风格</button>
+        <button class="btn btn-ghost" id="random-style" type="button">随机风格</button>
+        <button class="btn btn-ghost" id="again" type="button">重新拍一张</button>
+      </div>
+      <p class="random-hint" id="random-hint">随机风格：点一次换一种，6 种换完再从头上开始</p>
       <div class="insight" id="insight"></div>
       <div class="actions">
         <a class="btn btn-primary" id="download" download="记忆相册-海报.jpg">保存海报</a>
@@ -121,10 +127,6 @@
         </div>
       </div>
       <p class="sync-note" id="sync-note">家人留言会自动出现在海报上</p>
-      <div class="actions result-actions">
-        <button class="btn btn-primary" id="change-style" type="button">不满意？换个风格</button>
-        <button class="btn btn-ghost" id="again" type="button">重新拍一张</button>
-      </div>
     </section>
 
     <footer class="footer">
@@ -199,8 +201,8 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="qrcode.js"></script>
-  <script src="poster.js?v=20261109a"></script>
-  <script src="sync.js?v=20261109a"></script>
-  <script src="app.js?v=20261109a"></script>
+  <script src="poster.js?v=20261109c"></script>
+  <script src="sync.js?v=20261109c"></script>
+  <script src="app.js?v=20261109c"></script>
 </body>
 </html>
