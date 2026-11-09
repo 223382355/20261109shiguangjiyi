@@ -56,6 +56,28 @@
     "海洋": "愿心宽似海，平安自在",
     "金色": "愿金色岁月，温暖绵长"
   };
+  const STYLE_LEADS = {
+    "文艺": "日子慢慢", "喜庆": "家里有笑", "美丽": "光落在身上", "怀旧": "旧时光里",
+    "清新": "风轻轻的", "晚霞": "天色正好", "水墨": "山水淡淡", "田园": "小院家常",
+    "海洋": "海风轻轻", "金色": "阳光暖暖"
+  };
+  const MOOD_TAILS = {
+    "欢喜": "心里也跟着亮起来",
+    "想念": "有些想念藏在心里",
+    "安静": "心也安静下来",
+    "热闹": "日子过得热气腾腾",
+    "温暖": "平常的一天也有温度",
+    "清新": "适合把今天好好记住",
+    "平静": "不慌不忙就很好"
+  };
+  const MOOD_WORDS = {
+    "欢喜": ["开心", "高兴", "笑", "快乐", "幸福", "喜欢", "爱", "团聚", "回家", "生日", "过节", "过年", "孙", "孩子", "老伴", "朋友", "旅行"],
+    "想念": ["想念", "思念", "怀念", "以前", "从前", "当年", "故乡", "妈妈", "爸爸", "老照片"],
+    "热闹": ["热闹", "聚会", "团圆", "全家", "婚礼", "宴", "客人"],
+    "安静": ["安静", "散步", "晒太阳", "喝茶", "午后", "慢慢", "公园", "风"],
+    "温暖": ["温暖", "陪伴", "家人", "一起", "吃饭", "家"],
+    "清新": ["花", "草", "树", "山", "水", "海", "云", "春天"]
+  };
   const WEATHER_CODES = {
     0: "晴", 1: "多云", 2: "多云", 3: "阴", 45: "有雾", 48: "有雾",
     51: "毛毛雨", 53: "毛毛雨", 55: "毛毛雨", 56: "冻雨", 57: "冻雨",
@@ -291,6 +313,66 @@
     };
   }
 
+  async function photoTone(photoDataUrl) {
+    if (!photoDataUrl) return null;
+    const img = await loadImage(photoDataUrl);
+    const c = document.createElement("canvas");
+    c.width = 32;
+    c.height = 32;
+    const ctx = c.getContext("2d", { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0, 32, 32);
+    const data = ctx.getImageData(0, 0, 32, 32).data;
+    let r = 0, g = 0, b = 0, lum = 0, n = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      r += data[i];
+      g += data[i + 1];
+      b += data[i + 2];
+      lum += data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+      n += 1;
+    }
+    return {
+      warm: r / n - b / n,
+      green: g / n - (r / n + b / n) / 2,
+      bright: lum / n / 255
+    };
+  }
+
+  function detectMood(story, tone) {
+    const text = String(story || "");
+    let best = "";
+    let bestHits = 0;
+    Object.keys(MOOD_WORDS).forEach((mood) => {
+      const hits = MOOD_WORDS[mood].reduce((sum, word) => sum + (text.includes(word) ? 1 : 0), 0);
+      if (hits > bestHits) {
+        best = mood;
+        bestHits = hits;
+      }
+    });
+    if (best) return best;
+    if (tone) {
+      if (tone.bright > 0.66 && tone.warm > 8) return "温暖";
+      if (tone.green > 4) return "清新";
+      if (tone.bright < 0.36) return "安静";
+      if (tone.warm > 16) return "温暖";
+      if (tone.bright > 0.55) return "欢喜";
+    }
+    return "平静";
+  }
+
+  async function localAnalysis(photoDataUrl, story) {
+    const base = fallbackAnalysis(story);
+    let tone = null;
+    try {
+      tone = await photoTone(photoDataUrl);
+    } catch (e) { /* 照片读不出颜色时只按文字判断 */ }
+    const mood = detectMood(story, tone);
+    const lead = STYLE_LEADS[stateStyle()] || "";
+    const tail = MOOD_TAILS[mood] || "";
+    if (lead && tail) base.caption = `${lead}，${tail}`;
+    base.emotion = mood;
+    return base;
+  }
+
   function normalizeAnalysis(data, story) {
     if (!data) return fallbackAnalysis(story);
     const kw = Array.isArray(data.keywords) ? data.keywords.map((k) => clamp(k, 8)).filter(Boolean).slice(0, 6) : [];
@@ -309,24 +391,26 @@
 
   async function analyzePhoto(photoDataUrl, story) {
     const cfg = getConfig();
-    const base = fallbackAnalysis(story);
     if (!cfg.key || !cfg.model) {
+      const base = await localAnalysis(photoDataUrl, story);
       return { analysis: base, aiUsed: false, reason: "未配置 AI" };
     }
     try {
       const small = await compressDataUrl(photoDataUrl, 1024, 0.8);
       const prompt =
-        "你是一位为老年人写纪念文案的中文编辑。请观察照片，结合老人写的事件，只输出一个 JSON 对象，不要解释、不要代码块。\n" +
-        'JSON 字段：{"scene":"画面内容，20字内","people":["人物"],"event":"发生的事，24字内","emotion":"情绪，6字内","caption":"一句温柔的话，34字内","title":"4到8个字的小标题","blessing":"一句祝福，20字内","keywords":["关键词"]}\n' +
+        "你是一位为老年人写纪念文案的中文编辑。请先仔细看照片：画面里是谁、在哪里、在做什么，光线、颜色和动作给人什么感觉；再结合老人写下的事件，判断他/她此刻的情绪，可能是开心、满足、平静、想念、热闹，也可能是淡淡的伤感。\n" +
+        "文案要贴着照片里的具体细节和这种情绪写，不要写放之四海而皆准的空话。不同风格只改变语气和说法，内容仍然来自这张照片和这段心情。\n" +
+        "只输出一个 JSON 对象，不要解释、不要代码块。\n" +
+        'JSON 字段：{"scene":"照片里具体看到的内容，20字内","people":["人物"],"event":"发生的事，24字内","emotion":"从照片和文字里感受到的情绪，6字内","caption":"结合画面细节和情绪写一句温柔的话，34字内","title":"根据画面和情绪起4到8个字的小标题","blessing":"顺着这种情绪说一句祝福，20字内","keywords":["关键词"]}\n' +
         `风格要求：${STYLE_GUIDE[stateStyle()] || STYLE_GUIDE["文艺"]}\n` +
         `老人写的事件：${story || "（没有填写文字，请只根据照片）"}\n` +
-        "要求：所有内容使用简体中文，口语化、温暖，不要使用引号。";
+        "要求：所有内容使用简体中文，口语化、温暖，不要使用引号；不要编造照片里看不出来的人名、地点和事件。";
       const res = await fetch(ARK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: "Bearer " + cfg.key },
         body: JSON.stringify({
           model: cfg.model,
-          temperature: 0.35,
+          temperature: 0.55,
           messages: [{
             role: "user",
             content: [
@@ -348,6 +432,7 @@
       return { analysis: normalizeAnalysis(parsed, story), aiUsed: true };
     } catch (e) {
       console.warn("AI 调用失败：", e);
+      const base = await localAnalysis(photoDataUrl, story);
       return { analysis: base, aiUsed: false, reason: e.message || "AI 调用失败" };
     }
   }

@@ -853,12 +853,20 @@
     try {
       const recipe = state.recipe;
       recipe.style = style;
-      if (!recipe.aiUsed) {
-        recipe.title = SnapStory.FALLBACK_TITLES[style] || recipe.title;
-        recipe.caption = SnapStory.FALLBACK_CAPTIONS[style] || recipe.caption;
-        recipe.blessing = SnapStory.FALLBACK_BLESSINGS[style] || recipe.blessing;
-      }
       SnapStory.setCurrentStyle(style);
+      $("random-hint").textContent = "正在根据照片和心情写文案…";
+
+      const ai = await SnapStory.analyzePhoto(recipe.photo, recipe.story);
+      const a = ai.analysis;
+      recipe.title = normalizeTitle(a.title, style);
+      recipe.caption = a.caption || SnapStory.FALLBACK_CAPTIONS[style];
+      recipe.event = a.event || recipe.event || "今天的好光景";
+      recipe.scene = a.scene || recipe.scene || "";
+      recipe.emotion = a.emotion || recipe.emotion || "";
+      recipe.keywords = a.keywords || [];
+      recipe.blessing = a.blessing || SnapStory.FALLBACK_BLESSINGS[style];
+      recipe.aiUsed = !!ai.aiUsed;
+
       await SnapStory.renderPoster(posterCanvas, recipe);
       const dataUrl = posterCanvas.toDataURL("image/jpeg", 0.92);
       $("poster-img").src = dataUrl;
@@ -868,6 +876,7 @@
       state.pageUrl = pageUrl;
       $("page-link").href = pageUrl;
       $("qr-img").src = SnapStory.makeQrCanvas(pageUrl, 560).toDataURL("image/png");
+      renderInsight(recipe, ai);
       SnapStory.savePoster(recipe);
 
       if (recipe.syncKey && window.SnapSync) {
@@ -882,6 +891,7 @@
       toast(`已换成「${style}」`);
     } catch (e) {
       console.error(e);
+      $("random-hint").textContent = "换风格失败，请再试一次";
       toast("换风格失败，请再试一次");
     } finally {
       state.randomBusy = false;
